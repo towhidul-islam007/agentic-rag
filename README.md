@@ -29,7 +29,7 @@ A Streamlit chatbot application that connects to Google Vertex AI for conversati
    Edit `.env` with your actual values:
    - `GOOGLE_CLOUD_PROJECT`: Your Google Cloud project ID
    - `GOOGLE_APPLICATION_CREDENTIALS`: If this is not provided ADC will be used
-   - `VERTEX_AI_LOCATION`: Region (default: us-central1)
+   - `VERTEX_AI_LOCATION`: Region (default: global)
 
 ### Running the App
 
