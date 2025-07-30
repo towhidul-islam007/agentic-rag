@@ -1,0 +1,133 @@
+src = ["."]
+include = ["*.py"]
+exclude = [
+    "__init__.py",
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
+    "py.typed",
+    "README.md",
+]
+respect-gitignore = true
+line-length = 88
+target-version = "py313"
+required-version = ">=0.9.7"
+
+lint.select = [
+    "E",
+    "W",
+    "F",
+    "I",
+    "NPY",
+    "PD",
+    "D",
+    "PL",
+    "N",
+    "ANN",
+    "BLE",
+    "B",
+    "A",
+    "COM",
+    "C4",
+    "DTZ",
+    "EM",
+    "FA",
+    "ISC",
+    "ICN",
+    "G",
+    "PIE",
+    "T20",
+    "PYI",
+    "PT",
+    "Q",
+    "RSE",
+    "RET",
+    "SLF",
+    "SIM",
+    "TID",
+    "INT",
+    "ARG",
+    "PTH",
+    "TD",
+    "FIX",
+    "ERA",
+    "FLY",
+    "PERF",
+    "RUF",
+]
+lint.ignore = [
+    "S105",
+    "S106",
+    "S108",
+    "SIM112",
+    "E501",
+    "F401",
+    "S608",
+    "D100",
+    "PD002",
+    "PLR2004",
+    "ANN401",
+    "I001",
+    "TD002",
+    "TD003",
+    "D211",
+    "D212",
+    "COM812",
+    "T201",    # ignore print statements
+]
+lint.task-tags = ["TODO", "FIXME", "XXX"]
+lint.fixable = ["ALL"]
+lint.unfixable = []
+
+
+[lint.flake8-implicit-str-concat]
+allow-multiline = true
+
+[lint.flake8-errmsg]
+max-string-length = 120
+
+[lint.flake8-pytest-style]
+fixture-parentheses = true
+mark-parentheses = true
+
+[lint.flake8-quotes]
+docstring-quotes = "double"
+inline-quotes = "double"
+multiline-quotes = "double"
+
+[lint.flake8-tidy-imports]
+ban-relative-imports = "parents"
+
+[lint.isort]
+case-sensitive = true
+combine-as-imports = true
+lines-after-imports = -1
+lines-between-types = 1
+order-by-type = true
+
+[lint.pydocstyle]
+convention = "google"
+
+[lint.pylint]
+max-args = 8
+max-branches = 12
+max-returns = 6
+max-statements = 50
