@@ -1,0 +1,69 @@
+"""Base node class with common utilities"""
+
+import asyncio
+import concurrent.futures
+import logging
+
+from typing import Any, Awaitable, Callable
+
+from langchain_google_genai import ChatGoogleGenerativeAI
+
+from config import GOOGLE_API_KEY
+
+logger = logging.getLogger(__name__)
+
+# Thread pool executor for LLM calls
+_llm_executor = concurrent.futures.ThreadPoolExecutor(
+    max_workers=4, thread_name_prefix="llm_"
+)
+
+
+def run_llm_sync_safe(llm_func: Callable[[str], Awaitable[Any]], prompt: str):
+    """
+    Run LLM async function synchronously in a separate thread.
+
+    This completely avoids event loop conflicts by using synchronous execution.
+    """
+
+    def _run_sync() -> Any:
+        try:
+            # Import nest_asyncio to patch asyncio if needed
+            try:
+                import nest_asyncio
+
+                nest_asyncio.apply()
+            except ImportError:
+                pass
+
+            # Use asyncio.run which creates and manages its own event loop
+            return asyncio.run(llm_func(prompt))
+        except Exception as e:
+            logger.error(f"Error in LLM sync execution: {e}")
+            raise
+
+    return _run_sync
+
+
+class BaseNode:
+    """Base class for all nodes with common LLM initialization"""
+
+    def __init__(self, gemini_model: str = "gemini-2.5-flash") -> None:
+        # Initialize LLM config
+        self.llm_config = (
+            {"model": gemini_model, "google_api_key": GOOGLE_API_KEY}
+            if GOOGLE_API_KEY
+            else {"model": gemini_model}
+        )
+
+    def create_llm(self, temperature: float = 0.0, structured_output: Any = None):
+        """Create an LLM instance with the given configuration"""
+        llm = ChatGoogleGenerativeAI(temperature=temperature, **self.llm_config)
+        if structured_output:
+            return llm.with_structured_output(structured_output)
+        return llm
+
+    async def run_llm_call(self, llm: Any, prompt: str) -> Any:
+        """Run an LLM call safely in a separate thread"""
+        loop = asyncio.get_event_loop()
+        llm_task = run_llm_sync_safe(llm.ainvoke, prompt)
+        return await loop.run_in_executor(_llm_executor, llm_task)

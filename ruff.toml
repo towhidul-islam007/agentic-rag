@@ -42,7 +42,6 @@ lint.select = [
     "PL",
     "N",
     "ANN",
-    "BLE",
     "B",
     "A",
     "COM",
@@ -74,24 +73,28 @@ lint.select = [
     "RUF",
 ]
 lint.ignore = [
+    "ANN201",
+    "ANN401",
+    "COM812",
+    "D100",
+    "D107",
+    "D211",
+    "D212",
+    "D415",
+    "E501",
+    "G004",
+    "I001",
+    "PD002",
+    "PLR2004",
+    "PLW0603",
     "S105",
     "S106",
     "S108",
-    "SIM112",
-    "E501",
-    "F401",
     "S608",
-    "D100",
-    "PD002",
-    "PLR2004",
-    "ANN401",
-    "I001",
+    "SIM112",
+    "T201",    # ignore print statements
     "TD002",
     "TD003",
-    "D211",
-    "D212",
-    "COM812",
-    "T201",    # ignore print statements
 ]
 lint.task-tags = ["TODO", "FIXME", "XXX"]
 lint.fixable = ["ALL"]

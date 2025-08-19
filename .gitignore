@@ -66,3 +66,7 @@ htmlcov/
 # Temporary files
 *.tmp
 *.temp
+chroma_db/
+chroma/
+sample_documents/
+uploads/
