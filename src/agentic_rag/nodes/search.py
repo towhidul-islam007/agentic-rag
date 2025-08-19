@@ -7,10 +7,13 @@ import requests
 
 from bs4 import BeautifulSoup
 
-from config import WEB_SEARCH_TIMEOUT
+from config import get_settings
 from src.agentic_rag.models import WebSearchQuery
 from src.agentic_rag.nodes.base import BaseNode
 from src.agentic_rag.state import AgenticRAGState
+
+# Get settings instance
+settings = get_settings()
 
 logger = logging.getLogger(__name__)
 
@@ -58,7 +61,7 @@ class WebSearcher(BaseNode):
                 lambda: requests.get(
                     search_url,
                     headers={"User-Agent": "Mozilla/5.0"},
-                    timeout=WEB_SEARCH_TIMEOUT,
+                    timeout=settings.web_search_timeout,
                 ),
             )
 

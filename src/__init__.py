@@ -6,7 +6,7 @@ from src.rag_system import AgenticRAG
 
 __all__ = [
     "create_graph",
-    "AgenticRAGState", 
+    "AgenticRAGState",
     "GraphState",
     "DocumentManager",
     "AgenticRAG"

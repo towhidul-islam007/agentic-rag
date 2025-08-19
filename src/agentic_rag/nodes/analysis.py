@@ -72,7 +72,8 @@ class QueryAnalyzer(BaseNode):
 
         Question: "{question}"
 
-        Use "vectorstore" for questions about documents, technical topics, or specific knowledge.
+        Use "vectorstore" for questions about documents, technical topics, or
+        specific knowledge.
         Use "websearch" for current events, news, or general questions.
 
         Provide your routing decision with reasoning.
@@ -110,7 +111,8 @@ class QueryAnalyzer(BaseNode):
             )
             state["question"] = transformation.transformed_query
             logger.info(
-                f"Transformed query: {transformation.transformed_query} - {transformation.reasoning}"
+                f"Transformed query: {transformation.transformed_query} - "
+                f"{transformation.reasoning}"
             )
 
         except Exception as e:

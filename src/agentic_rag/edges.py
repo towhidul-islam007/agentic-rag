@@ -64,7 +64,8 @@ def decide_to_generate(state: AgenticRAGState) -> str:
             print("---DECISION: NO RELEVANT DOCS BUT HAVE WEB RESULTS, GENERATE---")
             return "generate"
         print(
-            "---DECISION: ALL DOCUMENTS ARE NOT RELEVANT TO QUESTION, INCLUDE WEB SEARCH---"
+            "---DECISION: ALL DOCUMENTS ARE NOT RELEVANT TO QUESTION, "
+            "INCLUDE WEB SEARCH---"
         )
         return "websearch"
     # We have relevant documents, so generate answer

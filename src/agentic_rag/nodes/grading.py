@@ -43,8 +43,10 @@ class DocumentGrader(BaseNode):
 
             User question: {question}
 
-            Determine if the document contains information relevant to answering the question.
-            This doesn't need to be a stringent test - the goal is to filter out clearly irrelevant retrievals.
+            Determine if the document contains information relevant to answering
+            the question.
+            This doesn't need to be a stringent test - the goal is to filter out
+            clearly irrelevant retrievals.
             """
 
             try:
@@ -85,7 +87,7 @@ class ResponseGrader(BaseNode):
     async def grade_generation_v_documents_and_question(
         self, state: AgenticRAGState
     ) -> AgenticRAGState:
-        """Determines whether the generation is grounded in the document and answers question"""
+        """Determines whether generation is grounded in document and answers question"""
         question = state["question"]
         documents = state.get("filtered_documents", [])
         generation = state.get("generation", "")
@@ -99,14 +101,16 @@ class ResponseGrader(BaseNode):
 
             # Grade for hallucinations
             hallucination_prompt = f"""
-            Assess whether this LLM generation is grounded in and supported by the provided facts.
+            Assess whether this LLM generation is grounded in and supported by
+            the provided facts.
 
             Set of facts:
             {doc_context}
 
             LLM generation: {generation}
 
-            Determine if the answer is supported by the facts or contains unsupported claims.
+            Determine if the answer is supported by the facts or contains
+            unsupported claims.
             """
 
             try:
@@ -115,7 +119,8 @@ class ResponseGrader(BaseNode):
                 )
                 state["hallucination_grade"] = hallucination_grade.score
                 logger.info(
-                    f"Hallucination grade: {hallucination_grade.score} - {hallucination_grade.reasoning}"
+                    f"Hallucination grade: {hallucination_grade.score} - "
+                    f"{hallucination_grade.reasoning}"
                 )
 
             except Exception as e:
@@ -124,7 +129,8 @@ class ResponseGrader(BaseNode):
 
         # Grade for answer quality
         answer_prompt = f"""
-        Assess whether this answer effectively addresses and resolves the user's question.
+        Assess whether this answer effectively addresses and resolves the
+        user's question.
 
         User question: {question}
         LLM generation: {generation}

@@ -7,7 +7,10 @@ from typing import Any, Dict, List
 from haystack import Document, component
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
-from config import GOOGLE_API_KEY
+from config import get_settings
+
+# Get settings instance
+settings = get_settings()
 
 logger = logging.getLogger(__name__)
 
@@ -17,11 +20,11 @@ class GoogleDocumentEmbedder:
     """Document embedder using Google Generative AI embeddings"""
 
     def __init__(self, model: str = "models/embedding-001") -> None:
-        if not GOOGLE_API_KEY:
+        if not settings.google_api_key:
             raise ValueError("GOOGLE_API_KEY is required for GoogleDocumentEmbedder")
 
         self.embedder = GoogleGenerativeAIEmbeddings(
-            model=model, google_api_key=GOOGLE_API_KEY
+            model=model, google_api_key=settings.google_api_key
         )
         self.model = model
         logger.info(f"GoogleDocumentEmbedder initialized with model: {model}")
@@ -71,11 +74,11 @@ class GoogleTextEmbedder:
     """Text embedder using Google Generative AI embeddings"""
 
     def __init__(self, model: str = "models/embedding-001") -> None:
-        if not GOOGLE_API_KEY:
+        if not settings.google_api_key:
             raise ValueError("GOOGLE_API_KEY is required for GoogleTextEmbedder")
 
         self.embedder = GoogleGenerativeAIEmbeddings(
-            model=model, google_api_key=GOOGLE_API_KEY
+            model=model, google_api_key=settings.google_api_key
         )
         self.model = model
         logger.info(f"GoogleTextEmbedder initialized with model: {model}")

@@ -38,19 +38,13 @@ def create_graph(gemini_model: str = "gemini-2.5-flash"):
     workflow.add_conditional_edges(
         "route_question",
         route_question,
-        {
-            "websearch": "websearch",
-            "vectorstore": "retrieve",
-        },
+        {"websearch": "websearch", "vectorstore": "retrieve"},
     )
     workflow.add_edge("retrieve", "grade_documents")
     workflow.add_conditional_edges(
         "grade_documents",
         decide_to_generate,
-        {
-            "websearch": "websearch",
-            "generate": "generate",
-        },
+        {"websearch": "websearch", "generate": "generate"},
     )
     workflow.add_edge("websearch", "generate")
     workflow.add_edge("generate", "grade_generation_v_documents_and_question")

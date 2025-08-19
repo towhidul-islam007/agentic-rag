@@ -2,7 +2,6 @@
 
 import asyncio
 import logging
-
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -179,7 +178,10 @@ class AgenticRAG:
         except Exception as e:
             logger.error(f"Error in query: {e}")
             return {
-                "response": "I apologize, but I encountered an error while processing your query.",
+                "response": (
+                    "I apologize, but I encountered an error while processing "
+                    "your query."
+                ),
                 "context": "",
                 "route_decision": "error",
                 "num_documents": 0,

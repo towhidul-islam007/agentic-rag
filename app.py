@@ -1,17 +1,13 @@
 import asyncio
 import logging
-import os
-
 from pathlib import Path
 from typing import Any, Coroutine
 
 import nest_asyncio
 import streamlit as st
-
 from dotenv import load_dotenv
-from google import genai
 
-from config import validate_config
+from config import get_settings
 from src.document_management import DocumentManager
 from src.rag_system import AgenticRAG
 
@@ -53,33 +49,22 @@ GEMINI_MODELS = {
     },
     "gemini-2.0-flash-lite": {
         "name": "Gemini 2.0 Flash-Lite",
-        "description": "Gemini 2.0 Flash model optimized for cost efficiency and low latency",
+        "description": (
+            "Gemini 2.0 Flash model optimized for cost efficiency and low latency"
+        ),
     },
 }
-
-
-def init_genai_client() -> genai.Client | None:
-    """Initialize GenAI Client."""
-    project_id = os.getenv("GOOGLE_CLOUD_PROJECT")
-    location = os.getenv("VERTEX_AI_LOCATION", "us-central1")
-
-    if not project_id:
-        st.error("Please set GOOGLE_CLOUD_PROJECT in your .env file")
-        return None
-
-    return genai.Client(
-        vertexai=True,
-        project=project_id,
-        location=location,
-    )
 
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Get settings instance
+settings = get_settings()
+
 # Validate configuration
-config_errors = validate_config()
+config_errors = settings.validate_config()
 if config_errors:
     st.error("Configuration errors found:")
     for error in config_errors:
@@ -98,15 +83,10 @@ st.markdown(
 if "selected_model" not in st.session_state:
     st.session_state.selected_model = "gemini-2.5-flash"
 
-# Initialize GenAI client
-if "genai_client" not in st.session_state:
-    with st.spinner("Initializing GenAI Client..."):
-        st.session_state.genai_client = init_genai_client()
-
 
 # Initialize RAG system
 @st.cache_resource
-def init_rag_system(model_name: str):
+def init_rag_system(model_name: str) -> AgenticRAG | None:
     """Initialize RAG system with caching"""
     try:
         return AgenticRAG(gemini_model=model_name)
@@ -249,7 +229,8 @@ with col2:
 
                         if success:
                             st.success(
-                                f"Successfully processed {len(processed_paths)} documents!"
+                                f"Successfully processed {len(processed_paths)} "
+                                f"documents!"
                             )
                         else:
                             st.error("Error processing documents")
@@ -311,7 +292,7 @@ with st.sidebar:
 
     # Display model description
     st.info(
-        f"**{GEMINI_MODELS[st.session_state.selected_model]['name']}**\n\n{GEMINI_MODELS[st.session_state.selected_model]['description']}",
+        f"**{GEMINI_MODELS[st.session_state.selected_model]['name']}**\n\n{GEMINI_MODELS[st.session_state.selected_model]['description']}"
     )
 
     st.divider()
@@ -354,10 +335,12 @@ with st.sidebar:
     st.header("❓ How to Use")
     st.write("1. **Upload documents** using the file uploader")
     st.write(
-        "2. **Ask questions** - the system will intelligently search your documents and/or the web"
+        "2. **Ask questions** - the system will intelligently search your "
+        "documents and/or the web"
     )
     st.write(
-        "3. **View search details** in the expandable sections to see how your query was processed"
+        "3. **View search details** in the expandable sections to see how "
+        "your query was processed"
     )
 
     st.subheader("💡 Tips")

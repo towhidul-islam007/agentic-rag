@@ -80,7 +80,7 @@ poetry run python test_agentic_rag.py
    ```bash
    cp .env.example .env
    ```
-   
+
    Edit `.env` with your values:
    ```env
    GOOGLE_CLOUD_PROJECT=your-project-id
@@ -211,6 +211,38 @@ poetry run mypy .       # Type checking
 - Local document storage (no data sent to external services except for generation)
 - Configurable upload limits
 - Input validation and sanitization
+
+## 🛠️ Development
+
+### Pre-commit Hooks
+
+This project uses pre-commit hooks to ensure code quality:
+
+```bash
+# Install pre-commit hooks
+poetry run pre-commit install
+
+# Run pre-commit on all files
+poetry run pre-commit run --all-files
+
+# Or use the helper script
+./scripts/pre-commit-check.sh
+```
+
+The pre-commit configuration includes:
+- **Ruff**: Linting and formatting
+- **MyPy**: Type checking
+- **General hooks**: Trailing whitespace, file endings, YAML/TOML validation
+
+### Code Quality
+
+```bash
+# Run linting
+poetry run ruff check .
+
+# Run formatting
+poetry run ruff format .
+```
 
 ## 🆘 Troubleshooting
 

@@ -2,15 +2,17 @@
 
 import asyncio
 import logging
-
 from pathlib import Path
 
 from haystack_integrations.components.retrievers.chroma import ChromaEmbeddingRetriever
 from haystack_integrations.document_stores.chroma import ChromaDocumentStore
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
-from config import CHROMA_DB_PATH, DEFAULT_TOP_K, GOOGLE_API_KEY
+from config import get_settings
 from src.embedders import GoogleDocumentEmbedder, GoogleTextEmbedder
+
+# Get settings instance
+settings = get_settings()
 
 logger = logging.getLogger(__name__)
 
@@ -26,13 +28,13 @@ def get_document_store():
     global _document_store
 
     if _document_store is None:
-        if not GOOGLE_API_KEY:
+        if not settings.google_api_key:
             raise ValueError(
                 "GOOGLE_API_KEY is required for ChromaDB with Google embeddings"
             )
 
         # Create ChromaDB document store
-        chroma_path = Path(CHROMA_DB_PATH)
+        chroma_path = Path(settings.chroma_db_path)
         chroma_path.mkdir(exist_ok=True)
 
         try:
@@ -48,7 +50,8 @@ def get_document_store():
                 collection_name="documents_google", persist_path=str(chroma_path)
             )
             logger.info(
-                "ChromaDB document store initialized with new collection for Google embeddings"
+                "ChromaDB document store initialized with new collection for "
+                "Google embeddings"
             )
 
     return _document_store
@@ -67,7 +70,7 @@ def get_retriever():
     if _retriever is None:
         document_store = get_document_store()
         _retriever = ChromaEmbeddingRetriever(
-            document_store=document_store, top_k=DEFAULT_TOP_K
+            document_store=document_store, top_k=settings.default_top_k
         )
         logger.info("ChromaDB retriever initialized")
 
@@ -85,7 +88,7 @@ def get_embedder():
     global _text_embedder
 
     if _text_embedder is None:
-        if not GOOGLE_API_KEY:
+        if not settings.google_api_key:
             raise ValueError("GOOGLE_API_KEY is required for Google text embeddings")
 
         _text_embedder = GoogleTextEmbedder()
@@ -104,10 +107,10 @@ def get_google_embedder():
     """Get or create Google Generative AI embedder instance"""
     global _google_embedder
 
-    if _google_embedder is None and GOOGLE_API_KEY:
+    if _google_embedder is None and settings.google_api_key:
         try:
             _google_embedder = GoogleGenerativeAIEmbeddings(
-                model="models/embedding-001", google_api_key=GOOGLE_API_KEY
+                model="models/embedding-001", google_api_key=settings.google_api_key
             )
             logger.info("Google Generative AI embedder initialized")
         except Exception as e:
@@ -125,7 +128,7 @@ async def get_google_embedder_async():
 
 def get_document_embedder():
     """Get or create Google document embedder instance"""
-    if not GOOGLE_API_KEY:
+    if not settings.google_api_key:
         raise ValueError("GOOGLE_API_KEY is required for Google document embeddings")
 
     return GoogleDocumentEmbedder()

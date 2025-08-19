@@ -28,11 +28,13 @@ numpy = "^2.0.0"
 torch = "^2.0.0"
 tokenizers = "0.21.2"
 nest-asyncio = "^1.6.0"
+pydantic-settings = "^2.10.1"
 
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.15.0"
 ruff = "^0.9.7"
+pre-commit = "^4.3.0"
 
 [build-system]
 requires = ["poetry-core"]

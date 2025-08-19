@@ -4,13 +4,16 @@ import asyncio
 import logging
 
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 import streamlit as st
 
 from docx import Document as DocxDocument
 
-from config import SUPPORTED_EXTENSIONS, UPLOAD_DIR
+from config import get_settings
+
+# Get settings instance
+settings = get_settings()
 
 logger = logging.getLogger(__name__)
 
@@ -18,12 +21,14 @@ logger = logging.getLogger(__name__)
 class DocumentManager:
     """Handles document upload and processing for the RAG system"""
 
-    def __init__(self, upload_dir: str = UPLOAD_DIR) -> None:
+    def __init__(self, upload_dir: Optional[str] = None) -> None:
+        if upload_dir is None:
+            upload_dir = str(settings.upload_dir)
         self.upload_dir = Path(upload_dir)
         self.upload_dir.mkdir(exist_ok=True)
 
         # Supported file types
-        self.supported_extensions = SUPPORTED_EXTENSIONS
+        self.supported_extensions = settings.supported_extensions
 
     async def save_uploaded_files(self, uploaded_files: List) -> List[str]:
         """Save uploaded files and return their paths"""

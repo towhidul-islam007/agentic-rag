@@ -42,7 +42,10 @@ class HallucinationGrade(BaseModel):
     """Model for hallucination detection"""
 
     score: Literal["yes", "no"] = Field(
-        description="Whether the answer is grounded in the provided documents (yes = grounded, no = hallucinated)"
+        description=(
+            "Whether the answer is grounded in the provided documents "
+            "(yes = grounded, no = hallucinated)"
+        )
     )
     reasoning: str = Field(
         description="Brief explanation for the hallucination assessment"

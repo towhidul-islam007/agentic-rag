@@ -8,7 +8,10 @@ from typing import Any, Awaitable, Callable
 
 from langchain_google_genai import ChatGoogleGenerativeAI
 
-from config import GOOGLE_API_KEY
+from config import get_settings
+
+# Get settings instance
+settings = get_settings()
 
 logger = logging.getLogger(__name__)
 
@@ -50,8 +53,8 @@ class BaseNode:
     def __init__(self, gemini_model: str = "gemini-2.5-flash") -> None:
         # Initialize LLM config
         self.llm_config = (
-            {"model": gemini_model, "google_api_key": GOOGLE_API_KEY}
-            if GOOGLE_API_KEY
+            {"model": gemini_model, "google_api_key": settings.google_api_key}
+            if settings.google_api_key
             else {"model": gemini_model}
         )
 

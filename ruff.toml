@@ -81,7 +81,6 @@ lint.ignore = [
     "D211",
     "D212",
     "D415",
-    "E501",
     "G004",
     "I001",
     "PD002",
@@ -105,7 +104,7 @@ lint.unfixable = []
 allow-multiline = true
 
 [lint.flake8-errmsg]
-max-string-length = 120
+max-string-length = 88
 
 [lint.flake8-pytest-style]
 fixture-parentheses = true
@@ -134,3 +133,9 @@ max-args = 8
 max-branches = 12
 max-returns = 6
 max-statements = 50
+
+# [lint.mypy]
+# strict = true
+# ignore_missing_imports = true
+# no_implicit_optional = false
+# disable_error_code = ["no-redef", "no-untyped-def", "no-untyped-call", "misc", "unused-ignore", "import-untyped"]
