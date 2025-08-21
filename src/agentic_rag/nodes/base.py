@@ -21,7 +21,9 @@ _llm_executor = concurrent.futures.ThreadPoolExecutor(
 )
 
 
-def run_llm_sync_safe(llm_func: Callable[[str], Awaitable[Any]], prompt: str):
+def run_llm_sync_safe(
+    llm_func: Callable[[str], Awaitable[Any]], prompt: str
+) -> Callable[[], Any]:
     """
     Run LLM async function synchronously in a separate thread.
 
@@ -58,7 +60,9 @@ class BaseNode:
             else {"model": gemini_model}
         )
 
-    def create_llm(self, temperature: float = 0.0, structured_output: Any = None):
+    def create_llm(
+        self, temperature: float = 0.0, structured_output: Any = None
+    ) -> Any:
         """Create an LLM instance with the given configuration"""
         llm = ChatGoogleGenerativeAI(temperature=temperature, **self.llm_config)
         if structured_output:

@@ -12,41 +12,42 @@ from src.clients import (
     get_embedder as _get_embedder,
     get_retriever as _get_retriever,
 )
+from src.clients.base import BaseDocumentStore, BaseEmbedder, BaseRetriever
 from src.clients.factory import EmbedderType, VectorStoreType
 
 logger = logging.getLogger(__name__)
 
 
 # Convenience functions that wrap the client factory
-def get_preferred_document_store():
+def get_preferred_document_store() -> BaseDocumentStore:
     """Get document store using preferred configuration"""
     return _get_document_store()
 
 
-def get_preferred_retriever(top_k: Optional[int] = None):
+def get_preferred_retriever(top_k: Optional[int] = None) -> BaseRetriever:
     """Get retriever using preferred configuration"""
     return _get_retriever(top_k=top_k)
 
 
-def get_preferred_embedder():
+def get_preferred_embedder() -> BaseEmbedder:
     """Get embedder using preferred configuration"""
     return _get_embedder(EmbedderType.GOOGLE)
 
 
 # Async wrappers
-async def get_document_store_async():
+async def get_document_store_async() -> BaseDocumentStore:
     """Async version of get_preferred_document_store"""
     loop = asyncio.get_event_loop()
     return await loop.run_in_executor(None, get_preferred_document_store)
 
 
-async def get_retriever_async(top_k: Optional[int] = None):
+async def get_retriever_async(top_k: Optional[int] = None) -> BaseRetriever:
     """Async version of get_preferred_retriever"""
     loop = asyncio.get_event_loop()
     return await loop.run_in_executor(None, get_preferred_retriever, top_k)
 
 
-async def get_embedder_async():
+async def get_embedder_async() -> BaseEmbedder:
     """Async version of get_preferred_embedder"""
     loop = asyncio.get_event_loop()
     return await loop.run_in_executor(None, get_preferred_embedder)
@@ -124,21 +125,21 @@ async def retrieve_documents(query: str, top_k: Optional[int] = None) -> List[Do
 
 
 # Store type specific functions for advanced usage
-def get_chroma_document_store():
+def get_chroma_document_store() -> BaseDocumentStore:
     """Get ChromaDB document store specifically"""
     return _get_document_store(VectorStoreType.CHROMA)
 
 
-def get_elasticsearch_document_store():
+def get_elasticsearch_document_store() -> BaseDocumentStore:
     """Get Elasticsearch document store specifically"""
     return _get_document_store(VectorStoreType.ELASTICSEARCH)
 
 
-def get_chroma_retriever(top_k: Optional[int] = None):
+def get_chroma_retriever(top_k: Optional[int] = None) -> BaseRetriever:
     """Get ChromaDB retriever specifically"""
     return _get_retriever(VectorStoreType.CHROMA, top_k=top_k)
 
 
-def get_elasticsearch_retriever(top_k: Optional[int] = None):
+def get_elasticsearch_retriever(top_k: Optional[int] = None) -> BaseRetriever:
     """Get Elasticsearch retriever specifically"""
     return _get_retriever(VectorStoreType.ELASTICSEARCH, top_k=top_k)

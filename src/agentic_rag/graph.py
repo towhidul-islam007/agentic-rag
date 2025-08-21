@@ -1,5 +1,7 @@
 """Main graph construction for the Agentic RAG system"""
 
+from typing import Any
+
 from langgraph.graph import END, StateGraph
 
 from src.agentic_rag.edges import (
@@ -11,7 +13,7 @@ from src.agentic_rag.nodes import RAGNodes
 from src.agentic_rag.state import AgenticRAGState
 
 
-def create_graph(gemini_model: str = "gemini-2.5-flash"):
+def create_graph(gemini_model: str = "gemini-2.5-flash") -> Any:
     """Create and compile the RAG workflow graph"""
     # Initialize nodes
     nodes = RAGNodes(gemini_model=gemini_model)

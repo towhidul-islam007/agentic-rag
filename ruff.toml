@@ -73,7 +73,6 @@ lint.select = [
     "RUF",
 ]
 lint.ignore = [
-    "ANN201",
     "ANN401",
     "COM812",
     "D100",
