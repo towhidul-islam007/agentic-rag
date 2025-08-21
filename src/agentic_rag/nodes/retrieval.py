@@ -16,13 +16,13 @@ logger = logging.getLogger(__name__)
 class DocumentRetriever(BaseNode):
     """Handles document retrieval from vector store."""
 
-    def __init__(self, gemini_model: str = "gemini-2.5-flash") -> None:
+    def __init__(self, model: str = "gemini-2.5-flash") -> None:
         """Initialize the document retriever.
 
         Args:
-            gemini_model: The Gemini model name to use for LLM operations.
+            model: The model name to use for LLM operations.
         """
-        super().__init__(gemini_model)
+        super().__init__(model)
         # Initialize retriever and embedder
         self.retriever = get_preferred_retriever()
         self.text_embedder = get_preferred_embedder()

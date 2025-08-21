@@ -1,7 +1,7 @@
-"""Base abstract classes for vector stores and embedders"""
+"""Base abstract classes for vector stores, embedders, and LLMs"""
 
 from abc import ABC, abstractmethod
-from typing import List, Optional
+from typing import Any, List, Optional
 
 from haystack import Document
 
@@ -110,5 +110,57 @@ class BaseRetriever(ABC):
 
         Returns:
             List of retrieved documents
+        """
+        ...
+
+
+class BaseLLM(ABC):
+    """Abstract base class for Language Learning Models"""
+
+    def configure_as_structured(self, structured_llm: Any) -> None:
+        """Configure this wrapper instance as a structured output LLM.
+
+        Args:
+            structured_llm: The structured LLM instance to use.
+        """
+        self._llm = structured_llm  # noqa
+        self._is_structured = True  # noqa
+
+    @abstractmethod
+    def invoke(self, prompt: str) -> Any:
+        """
+        Synchronously invoke the LLM with a prompt
+
+        Args:
+            prompt: Input prompt string
+
+        Returns:
+            Generated response (str for regular LLM, structured object for structured)
+        """
+        ...
+
+    @abstractmethod
+    async def ainvoke(self, prompt: str) -> Any:
+        """
+        Asynchronously invoke the LLM with a prompt
+
+        Args:
+            prompt: Input prompt string
+
+        Returns:
+            Generated response (str for regular LLM, structured object for structured)
+        """
+        ...
+
+    @abstractmethod
+    def with_structured_output(self, schema: Any) -> "BaseLLM":
+        """
+        Configure LLM to return structured output
+
+        Args:
+            schema: Output schema definition
+
+        Returns:
+            LLM instance configured for structured output
         """
         ...

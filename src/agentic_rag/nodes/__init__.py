@@ -11,14 +11,14 @@ from agentic_rag.state import AgenticRAGState
 class RAGNodes:
     """Collection of nodes for the RAG workflow"""
 
-    def __init__(self, gemini_model: str = "gemini-2.5-flash") -> None:
+    def __init__(self, model: str = "gemini-2.5-flash") -> None:
         # Initialize all node components
-        self.query_analyzer = QueryAnalyzer(gemini_model)
-        self.document_retriever = DocumentRetriever(gemini_model)
-        self.document_grader = DocumentGrader(gemini_model)
-        self.response_generator = ResponseGenerator(gemini_model)
-        self.response_grader = ResponseGrader(gemini_model)
-        self.web_searcher = WebSearcher(gemini_model)
+        self.query_analyzer = QueryAnalyzer(model)
+        self.document_retriever = DocumentRetriever(model)
+        self.document_grader = DocumentGrader(model)
+        self.response_generator = ResponseGenerator(model)
+        self.response_grader = ResponseGrader(model)
+        self.web_searcher = WebSearcher(model)
 
     async def analyze_query(self, state: AgenticRAGState) -> AgenticRAGState:
         """Analyze the query to understand intent and complexity"""

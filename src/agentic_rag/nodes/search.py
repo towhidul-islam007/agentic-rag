@@ -21,13 +21,13 @@ logger = logging.getLogger(__name__)
 class WebSearcher(BaseNode):
     """Handles web search functionality."""
 
-    def __init__(self, gemini_model: str = "gemini-2.5-flash") -> None:
+    def __init__(self, model: str = "gemini-2.5-flash") -> None:
         """Initialize the web searcher.
 
         Args:
-            gemini_model: Gemini model name to use. Defaults to 'gemini-2.5-flash'.
+            model: Model name to use. Defaults to 'gemini-2.5-flash'.
         """
-        super().__init__(gemini_model)
+        super().__init__(model)
         self.web_search_optimizer = self.create_llm(
             temperature=0.0, structured_output=WebSearchQuery
         )

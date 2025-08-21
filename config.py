@@ -22,6 +22,20 @@ class Settings(BaseSettings):
         default=None, description="Google API key for Generative AI"
     )
 
+    # Azure OpenAI Configuration
+    azure_openai_api_key: Optional[str] = Field(
+        default=None, description="Azure OpenAI API key"
+    )
+    azure_openai_endpoint: Optional[str] = Field(
+        default=None, description="Azure OpenAI endpoint URL"
+    )
+    azure_openai_api_version: str = Field(
+        default="2024-02-01", description="Azure OpenAI API version"
+    )
+    azure_openai_deployment_name: str = Field(
+        default="gpt-4", description="Azure OpenAI deployment/model name"
+    )
+
     # Elasticsearch Configuration
     elasticsearch_url: Optional[str] = Field(
         default=None, description="Elasticsearch cluster URL"
@@ -47,8 +61,11 @@ class Settings(BaseSettings):
         default="sentence-transformers/all-mpnet-base-v2",
         description="Embedding model identifier",
     )
-    default_gemini_model: str = Field(
-        default="gemini-2.5-flash", description="Default Gemini model to use"
+    default_llm_model: str = Field(
+        default="gemini-2.5-flash", description="Default LLM model to use"
+    )
+    llm_provider: str = Field(
+        default="google", description="LLM provider to use: 'google' or 'azure'"
     )
 
     # Document Processing Configuration
@@ -79,6 +96,40 @@ class Settings(BaseSettings):
         description="Supported file extensions for upload",
     )
 
+    # Available LLM models configuration
+    available_models: dict = Field(
+        default={
+            "gemini-2.5-pro": {
+                "name": "Gemini 2.5 Pro",
+                "description": "Our most advanced reasoning model to date",
+            },
+            "gemini-2.5-flash": {
+                "name": "Gemini 2.5 Flash",
+                "description": (
+                    "Best price-performance, offering well-rounded capabilities"
+                ),
+            },
+            "gemini-2.5-flash-lite": {
+                "name": "Gemini 2.5 Flash-Lite",
+                "description": (
+                    "Most cost effective model that supports high throughput tasks"
+                ),
+            },
+            "gemini-2.0-flash-exp": {
+                "name": "Gemini 2.0 Flash",
+                "description": "Newest multimodal model, with next generation features",
+            },
+            "gemini-2.0-flash-lite": {
+                "name": "Gemini 2.0 Flash-Lite",
+                "description": (
+                    "Gemini 2.0 Flash model optimized for cost efficiency "
+                    "and low latency"
+                ),
+            },
+        },
+        description="Available LLM models and their descriptions",
+    )
+
     model_config = {
         "env_file": ".env",
         "env_file_encoding": "utf-8",
@@ -102,10 +153,26 @@ class Settings(BaseSettings):
             raise ValueError("chunk_overlap must be less than max_chunk_size")
 
         # Validate Google credentials
-        if not self.google_cloud_project and not self.google_api_key:
-            raise ValueError(
-                "Either google_cloud_project or google_api_key must be set"
+        if (
+            self.llm_provider == "google"
+            and not self.google_cloud_project
+            and not self.google_api_key
+        ):
+            msg = (
+                "Either google_cloud_project or google_api_key must be set "
+                "when using Google LLM provider"
             )
+            raise ValueError(msg)
+
+        # Validate Azure OpenAI credentials
+        if self.llm_provider == "azure" and (
+            not self.azure_openai_api_key or not self.azure_openai_endpoint
+        ):
+            msg = (
+                "azure_openai_api_key and azure_openai_endpoint must be set "
+                "when using Azure LLM provider"
+            )
+            raise ValueError(msg)
 
         # Validate Elasticsearch credentials if URL is provided
         if self.elasticsearch_url and not self.elasticsearch_api_key:
@@ -119,8 +186,20 @@ class Settings(BaseSettings):
         """Additional validation with detailed error messages"""
         errors = []
 
-        if not self.google_cloud_project and not self.google_api_key:
-            errors.append("Either GOOGLE_CLOUD_PROJECT or GOOGLE_API_KEY must be set")
+        if self.llm_provider == "google":
+            if not self.google_cloud_project and not self.google_api_key:
+                errors.append(
+                    "Either GOOGLE_CLOUD_PROJECT or GOOGLE_API_KEY must be set"
+                )
+        elif self.llm_provider == "azure":
+            if not self.azure_openai_api_key:
+                errors.append(
+                    "AZURE_OPENAI_API_KEY must be set when using Azure provider"
+                )
+            if not self.azure_openai_endpoint:
+                errors.append(
+                    "AZURE_OPENAI_ENDPOINT must be set when using Azure provider"
+                )
 
         if not self.chroma_db_path.exists():
             errors.append(f"ChromaDB path does not exist: {self.chroma_db_path}")
@@ -133,16 +212,20 @@ class Settings(BaseSettings):
     def get_config_summary(self) -> dict:
         """Get a summary of current configuration"""
         return {
+            "llm_provider": self.llm_provider,
             "google_cloud_project": self.google_cloud_project,
             "vertex_ai_location": self.vertex_ai_location,
             "has_google_api_key": bool(self.google_api_key),
+            "has_azure_openai_api_key": bool(self.azure_openai_api_key),
+            "azure_openai_endpoint": self.azure_openai_endpoint,
+            "azure_openai_deployment_name": self.azure_openai_deployment_name,
             "elasticsearch_url": self.elasticsearch_url,
             "has_elasticsearch_api_key": bool(self.elasticsearch_api_key),
             "elasticsearch_index": self.elasticsearch_index,
             "chroma_db_path": str(self.chroma_db_path),
             "upload_dir": str(self.upload_dir),
             "embedding_model": self.embedding_model,
-            "default_gemini_model": self.default_gemini_model,
+            "default_llm_model": self.default_llm_model,
             "max_chunk_size": self.max_chunk_size,
             "chunk_overlap": self.chunk_overlap,
             "default_top_k": self.default_top_k,

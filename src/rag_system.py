@@ -24,19 +24,19 @@ logger = logging.getLogger(__name__)
 class AgenticRAG:
     """Main Agentic RAG system."""
 
-    def __init__(self, gemini_model: str = "gemini-2.5-flash") -> None:
+    def __init__(self, model: str = "gemini-2.5-flash") -> None:
         """Initialize the Agentic RAG system.
 
         Args:
-            gemini_model: The Gemini model name to use for LLM operations.
+            model: The model name to use for LLM operations.
         """
-        self.gemini_model = gemini_model
+        self.model = model
 
         # Initialize document processing pipeline
         self._build_indexing_pipeline()
 
         # Create the workflow graph
-        self.app = create_graph(gemini_model)
+        self.app = create_graph(model)
 
     def _build_indexing_pipeline(self) -> None:
         """Build document indexing pipeline."""

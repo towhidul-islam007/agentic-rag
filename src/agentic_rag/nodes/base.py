@@ -6,7 +6,7 @@ import logging
 
 from typing import Any, Awaitable, Callable
 
-from langchain_google_genai import ChatGoogleGenerativeAI
+from clients.factory import get_llm
 
 from config import get_settings
 
@@ -61,18 +61,14 @@ def run_llm_sync_safe(
 class BaseNode:
     """Base class for all nodes with common LLM initialization"""
 
-    def __init__(self, gemini_model: str = "gemini-2.5-flash") -> None:
+    def __init__(self, model: str = "gemini-2.5-flash") -> None:
         """Initialize the base node with LLM configuration.
 
         Args:
-            gemini_model: Model name or configuration. Defaults to 'gemini-2.5-flash'.
+            model: Model name or configuration. Defaults to 'gemini-2.5-flash'.
         """
-        # Initialize LLM config
-        self.llm_config = (
-            {"model": gemini_model, "google_api_key": settings.google_api_key}
-            if settings.google_api_key
-            else {"model": gemini_model}
-        )
+        # Store the model name for LLM creation
+        self.model = model
 
     def create_llm(
         self, temperature: float = 0.0, structured_output: Any = None
@@ -86,7 +82,8 @@ class BaseNode:
         Returns:
             Any: Configured LLM instance.
         """
-        llm = ChatGoogleGenerativeAI(temperature=temperature, **self.llm_config)
+        llm = get_llm(model=self.model, temperature=temperature)
+
         if structured_output:
             return llm.with_structured_output(structured_output)
         return llm

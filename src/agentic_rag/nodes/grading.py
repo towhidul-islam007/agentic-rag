@@ -12,13 +12,13 @@ logger = logging.getLogger(__name__)
 class DocumentGrader(BaseNode):
     """Handles document relevance grading."""
 
-    def __init__(self, gemini_model: str = "gemini-2.5-flash") -> None:
+    def __init__(self, model: str = "gemini-2.5-flash") -> None:
         """Initialize the document grader.
 
         Args:
-            gemini_model: Gemini model name to use. Defaults to 'gemini-2.5-flash'.
+            model: Model name to use. Defaults to 'gemini-2.5-flash'.
         """
-        super().__init__(gemini_model)
+        super().__init__(model)
         self.retrieval_grader = self.create_llm(
             temperature=0.0, structured_output=RelevanceGrade
         )
@@ -87,13 +87,13 @@ class DocumentGrader(BaseNode):
 class ResponseGrader(BaseNode):
     """Handles response quality grading."""
 
-    def __init__(self, gemini_model: str = "gemini-2.5-flash") -> None:
+    def __init__(self, model: str = "gemini-2.5-flash") -> None:
         """Initialize the response grader.
 
         Args:
-            gemini_model: Gemini model name to use. Defaults to 'gemini-2.5-flash'.
+            model: Model name to use. Defaults to 'gemini-2.5-flash'.
         """
-        super().__init__(gemini_model)
+        super().__init__(model)
         self.hallucination_grader = self.create_llm(
             temperature=0.0, structured_output=HallucinationGrade
         )

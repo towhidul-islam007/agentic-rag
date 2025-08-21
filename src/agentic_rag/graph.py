@@ -12,17 +12,16 @@ from agentic_rag.state import AgenticRAGState
 from langgraph.graph import END, StateGraph
 
 
-def create_graph(gemini_model: str = "gemini-2.5-flash") -> Any:
+def create_graph(model: str = "gemini-2.5-flash") -> Any:
     """Create and compile the RAG workflow graph.
 
     Args:
-        gemini_model: The Gemini model name to use for LLM operations.
+        model: The model name to use for LLM operations.
 
     Returns:
-        Any: Compiled LangGraph workflow.
+        Any: The result.
     """
-    # Initialize nodes
-    nodes = RAGNodes(gemini_model=gemini_model)
+    nodes = RAGNodes(model=model)
 
     # Create the graph
     workflow = StateGraph(AgenticRAGState)

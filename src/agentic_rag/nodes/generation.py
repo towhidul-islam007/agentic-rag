@@ -11,13 +11,13 @@ logger = logging.getLogger(__name__)
 class ResponseGenerator(BaseNode):
     """Handles response generation."""
 
-    def __init__(self, gemini_model: str = "gemini-2.5-flash") -> None:
+    def __init__(self, model: str = "gemini-2.5-flash") -> None:
         """Initialize the response generator.
 
         Args:
-            gemini_model: Gemini model name to use. Defaults to 'gemini-2.5-flash'.
+            model: Model name to use. Defaults to 'gemini-2.5-flash'.
         """
-        super().__init__(gemini_model)
+        super().__init__(model)
         self.generator = self.create_llm(
             temperature=0.3
         )  # Higher temperature for generation
@@ -73,7 +73,11 @@ class ResponseGenerator(BaseNode):
 
         try:
             response = await self.run_llm_call(self.generator, generation_prompt)
-            state["generation"] = response.content
+            # Handle both string responses and objects with content attribute
+            if hasattr(response, "content"):
+                state["generation"] = response.content
+            else:
+                state["generation"] = str(response)
             logger.info("Generated response successfully")
 
         except Exception as e:

@@ -5,9 +5,10 @@ import logging
 from enum import Enum
 from typing import Any, Optional
 
-from clients.base import BaseDocumentStore, BaseEmbedder, BaseRetriever
+from clients.base import BaseDocumentStore, BaseEmbedder, BaseLLM, BaseRetriever
 from clients.chroma_client import ChromaDocumentStoreWrapper, ChromaRetriever
 from clients.google_embedder import GoogleEmbedder
+from clients.google_llm import GoogleLLMWrapper
 
 from config import get_settings
 
@@ -27,14 +28,23 @@ class EmbedderType(Enum):
     GOOGLE = "google"
 
 
+class LLMProvider(Enum):
+    """Supported LLM providers"""
+
+    GOOGLE = "google"
+    AZURE = "azure"
+
+
 class ClientFactory:
-    """Factory for creating vector store and embedder clients."""
+    """Factory for creating vector store, embedder, and LLM clients."""
 
     def __init__(self) -> None:
         """Initialize the client factory."""
         self.settings = get_settings()
         self._document_stores = {}
         self._retrievers = {}
+        self._embedders = {}
+        self._llms = {}
         self._embedders = {}
 
     def get_embedder(
@@ -152,11 +162,67 @@ class ClientFactory:
             return VectorStoreType.ELASTICSEARCH
         return VectorStoreType.CHROMA
 
+    def get_llm(
+        self,
+        provider: LLMProvider = LLMProvider.GOOGLE,
+        model: Optional[str] = None,
+        temperature: float = 0.0,
+        **kwargs: Any,
+    ) -> BaseLLM:
+        """Get or create an LLM instance.
+
+        Args:
+            provider: The LLM provider to use. Defaults to GOOGLE.
+            model: The model name to use. If None, uses provider default.
+            temperature: The temperature setting for the LLM (0.0 to 1.0).
+            **kwargs: Additional keyword arguments passed to the LLM constructor.
+
+        Returns:
+            BaseLLM: The configured LLM instance.
+
+        Raises:
+            ValueError: If provider is not supported.
+        """
+        cache_key = f"{provider.value}_{model or 'default'}_{temperature}"
+
+        if cache_key not in self._llms:
+            if provider == LLMProvider.GOOGLE:
+                if model is None:
+                    model = self.settings.default_llm_model
+                self._llms[cache_key] = GoogleLLMWrapper(
+                    model=model, temperature=temperature, **kwargs
+                )
+            elif provider == LLMProvider.AZURE:
+                if model is None:
+                    model = self.settings.azure_openai_deployment_name
+                from clients.azure_llm import AzureOpenAILLMWrapper
+
+                self._llms[cache_key] = AzureOpenAILLMWrapper(
+                    deployment_name=model, temperature=temperature, **kwargs
+                )
+            else:
+                msg = f"Unsupported LLM provider: {provider}"
+                raise ValueError(msg)
+
+        return self._llms[cache_key]
+
+    def get_preferred_llm_provider(self) -> LLMProvider:
+        """Get the preferred LLM provider based on configuration.
+
+        Returns:
+            LLMProvider: The preferred LLM provider.
+        """
+        provider_str = self.settings.llm_provider.lower()
+        if provider_str == "azure":
+            return LLMProvider.AZURE
+        return LLMProvider.GOOGLE
+
     def clear_cache(self) -> None:
         """Clear all cached instances."""
         self._document_stores.clear()
         self._retrievers.clear()
         self._embedders.clear()
+        self._llms.clear()
         logger.info("Client factory cache cleared")
 
 
@@ -233,3 +299,26 @@ def get_retriever(
     if store_type is None:
         store_type = factory.get_preferred_store_type()
     return factory.get_retriever(store_type, document_store, top_k, **kwargs)
+
+
+def get_llm(
+    provider: Optional[LLMProvider] = None,
+    model: Optional[str] = None,
+    temperature: float = 0.0,
+    **kwargs: Any,
+) -> BaseLLM:
+    """Get an LLM instance.
+
+    Args:
+        provider: The LLM provider to use. If None, uses default from settings.
+        model: The model name to use. If None, uses provider default.
+        temperature: The temperature setting for the LLM (0.0 to 1.0).
+        **kwargs: Additional keyword arguments passed to the LLM constructor.
+
+    Returns:
+        BaseLLM: The configured LLM instance.
+    """
+    factory = get_factory()
+    if provider is None:
+        provider = factory.get_preferred_llm_provider()
+    return factory.get_llm(provider, model, temperature, **kwargs)

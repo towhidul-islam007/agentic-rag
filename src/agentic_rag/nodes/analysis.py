@@ -12,13 +12,13 @@ logger = logging.getLogger(__name__)
 class QueryAnalyzer(BaseNode):
     """Handles query analysis and routing logic."""
 
-    def __init__(self, gemini_model: str = "gemini-2.5-flash") -> None:
+    def __init__(self, model: str = "gemini-2.5-flash") -> None:
         """Initialize the query analyzer.
 
         Args:
-            gemini_model: Gemini model name to use. Defaults to 'gemini-2.5-flash'.
+            model: Model name to use. Defaults to 'gemini-2.5-flash'.
         """
-        super().__init__(gemini_model)
+        super().__init__(model)
         self.query_analyzer = self.create_llm(
             temperature=0.0, structured_output=QueryAnalysis
         )

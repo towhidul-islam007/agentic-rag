@@ -3,7 +3,7 @@
 import asyncio
 import logging
 
-from typing import List, Optional
+from typing import Any, Coroutine, List, Optional
 
 from clients import (
     get_document_store as _get_document_store,
@@ -15,6 +15,24 @@ from clients.factory import EmbedderType, VectorStoreType
 from haystack import Document
 
 logger = logging.getLogger(__name__)
+
+
+def run_async(coro: Coroutine) -> Any:
+    """Helper function to run async functions in Streamlit.
+
+    Args:
+        coro: The async coroutine to run.
+
+    Returns:
+        Any: The result of the coroutine.
+    """
+    try:
+        # With nest_asyncio, we can use asyncio.run even in running loops
+        return asyncio.run(coro)
+    except RuntimeError:
+        # Fallback to get_event_loop if needed
+        loop = asyncio.get_event_loop()
+        return loop.run_until_complete(coro)
 
 
 # Convenience functions that wrap the client factory
