@@ -2,21 +2,21 @@
 
 import asyncio
 import logging
+
 from pathlib import Path
 from typing import Any, Dict, List
 
 from haystack import Document, Pipeline
 from haystack.components.converters import PyPDFToDocument, TextFileToDocument
 from haystack.components.preprocessors import DocumentSplitter
-from haystack.components.writers import DocumentWriter
 from langchain_core.messages import HumanMessage
 
 from src.agentic_rag import create_graph
+from src.clients.haystack_wrappers import DocumentStoreWriter, EmbedderWrapper
 from src.utils import (
     get_document_count_sync,
-    get_document_embedder,
-    get_document_store,
-    save_document_store,
+    get_preferred_document_store,
+    get_preferred_embedder,
 )
 
 logger = logging.getLogger(__name__)
@@ -36,10 +36,10 @@ class AgenticRAG:
 
     def _build_indexing_pipeline(self) -> None:
         """Build document indexing pipeline"""
-        document_store = get_document_store()
+        document_store = get_preferred_document_store()
 
         # Initialize document embedder (Google embeddings preferred)
-        doc_embedder = get_document_embedder()
+        doc_embedder = get_preferred_embedder()
 
         self.indexing_pipeline = Pipeline()
 
@@ -51,9 +51,9 @@ class AgenticRAG:
         self.indexing_pipeline.add_component(
             "metadata_cleaner", self._create_metadata_cleaner()
         )
-        self.indexing_pipeline.add_component("embedder", doc_embedder)
+        self.indexing_pipeline.add_component("embedder", EmbedderWrapper(doc_embedder))
         self.indexing_pipeline.add_component(
-            "writer", DocumentWriter(document_store=document_store)
+            "writer", DocumentStoreWriter(document_store)
         )
 
         # Connect components
@@ -120,19 +120,24 @@ class AgenticRAG:
                     logger.warning(f"Unsupported file type: {path.suffix}")
 
             if documents:
-                # Run the pipeline in executor to keep the async interface
+                # Run the pipeline synchronously in executor
+                def run_pipeline() -> Dict[str, Any]:
+                    return self.indexing_pipeline.run(
+                        {"splitter": {"documents": documents}}
+                    )
+
                 loop = asyncio.get_event_loop()
-                result = await loop.run_in_executor(
-                    None,
-                    self.indexing_pipeline.run,
-                    {"splitter": {"documents": documents}},
-                )
-                await save_document_store()
+                result = await loop.run_in_executor(None, run_pipeline)
+
                 logger.info(f"Successfully indexed {len(documents)} documents")
+                logger.debug(f"Pipeline result: {result}")
                 return True
 
         except Exception as e:
             logger.error(f"Error adding documents: {e}")
+            import traceback
+
+            logger.error(f"Traceback: {traceback.format_exc()}")
 
         return False
 

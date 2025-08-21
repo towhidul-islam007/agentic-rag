@@ -22,6 +22,20 @@ class Settings(BaseSettings):
         default=None, description="Google API key for Generative AI"
     )
 
+    # Elasticsearch Configuration
+    elasticsearch_url: Optional[str] = Field(
+        default=None, description="Elasticsearch cluster URL"
+    )
+    elasticsearch_api_key: Optional[str] = Field(
+        default=None, description="Elasticsearch API key"
+    )
+    elasticsearch_index: str = Field(
+        default="documents", description="Elasticsearch index name for documents"
+    )
+    elasticsearch_ca_certs: Optional[str] = Field(
+        default=None, description="Path to CA certificates for Elasticsearch"
+    )
+
     # RAG System Configuration
     chroma_db_path: Path = Field(
         default=Path("./chroma_db"), description="Path to ChromaDB storage directory"
@@ -70,7 +84,7 @@ class Settings(BaseSettings):
         "env_file_encoding": "utf-8",
         "case_sensitive": False,
         "validate_assignment": True,
-        "extra": "forbid",
+        "extra": "allow",
     }
 
     @field_validator("chroma_db_path", "upload_dir")
@@ -91,6 +105,12 @@ class Settings(BaseSettings):
         if not self.google_cloud_project and not self.google_api_key:
             raise ValueError(
                 "Either google_cloud_project or google_api_key must be set"
+            )
+
+        # Validate Elasticsearch credentials if URL is provided
+        if self.elasticsearch_url and not self.elasticsearch_api_key:
+            raise ValueError(
+                "elasticsearch_api_key must be provided when elasticsearch_url is set"
             )
 
         return self
@@ -116,6 +136,9 @@ class Settings(BaseSettings):
             "google_cloud_project": self.google_cloud_project,
             "vertex_ai_location": self.vertex_ai_location,
             "has_google_api_key": bool(self.google_api_key),
+            "elasticsearch_url": self.elasticsearch_url,
+            "has_elasticsearch_api_key": bool(self.elasticsearch_api_key),
+            "elasticsearch_index": self.elasticsearch_index,
             "chroma_db_path": str(self.chroma_db_path),
             "upload_dir": str(self.upload_dir),
             "embedding_model": self.embedding_model,

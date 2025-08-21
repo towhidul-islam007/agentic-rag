@@ -7,7 +7,7 @@ from typing import Any
 
 from src.agentic_rag.nodes.base import BaseNode
 from src.agentic_rag.state import AgenticRAGState
-from src.utils import get_embedder, get_retriever
+from src.utils import get_preferred_embedder, get_preferred_retriever
 
 logger = logging.getLogger(__name__)
 
@@ -18,8 +18,8 @@ class DocumentRetriever(BaseNode):
     def __init__(self, gemini_model: str = "gemini-2.5-flash") -> None:
         super().__init__(gemini_model)
         # Initialize retriever and embedder
-        self.retriever = get_retriever()
-        self.text_embedder = get_embedder()
+        self.retriever = get_preferred_retriever()
+        self.text_embedder = get_preferred_embedder()
 
     async def retrieve(self, state: AgenticRAGState) -> AgenticRAGState:
         """Retrieve documents"""
