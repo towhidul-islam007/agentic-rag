@@ -5,11 +5,10 @@ import logging
 
 from typing import List
 
+from agentic_rag.nodes.base import BaseNode
+from agentic_rag.state import AgenticRAGState
 from haystack import Document
-
-from src.agentic_rag.nodes.base import BaseNode
-from src.agentic_rag.state import AgenticRAGState
-from src.utils import get_preferred_embedder, get_preferred_retriever
+from utils import get_preferred_embedder, get_preferred_retriever
 
 logger = logging.getLogger(__name__)
 

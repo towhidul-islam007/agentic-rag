@@ -6,9 +6,9 @@ from enum import Enum
 from typing import Any, Optional
 
 from config import get_settings
-from src.clients.base import BaseDocumentStore, BaseEmbedder, BaseRetriever
-from src.clients.chroma_client import ChromaDocumentStoreWrapper, ChromaRetriever
-from src.clients.google_embedder import GoogleEmbedder
+from clients.base import BaseDocumentStore, BaseEmbedder, BaseRetriever
+from clients.chroma_client import ChromaDocumentStoreWrapper, ChromaRetriever
+from clients.google_embedder import GoogleEmbedder
 
 logger = logging.getLogger(__name__)
 
@@ -67,7 +67,7 @@ class ClientFactory:
                 )
             elif store_type == VectorStoreType.ELASTICSEARCH:
                 # Import here to avoid dependency issues if ES is not configured
-                from src.clients.elasticsearch_client import (
+                from clients.elasticsearch_client import (
                     ElasticsearchDocumentStoreWrapper,
                 )
 
@@ -100,7 +100,7 @@ class ClientFactory:
                 )
             elif store_type == VectorStoreType.ELASTICSEARCH:
                 # Import here to avoid dependency issues if ES is not configured
-                from src.clients.elasticsearch_client import ElasticsearchRetriever
+                from clients.elasticsearch_client import ElasticsearchRetriever
 
                 self._retrievers[cache_key] = ElasticsearchRetriever(
                     document_store=document_store, top_k=top_k

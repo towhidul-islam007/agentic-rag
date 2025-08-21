@@ -5,15 +5,14 @@ import logging
 
 from typing import List, Optional
 
-from haystack import Document
-
-from src.clients import (
+from clients import (
     get_document_store as _get_document_store,
     get_embedder as _get_embedder,
     get_retriever as _get_retriever,
 )
-from src.clients.base import BaseDocumentStore, BaseEmbedder, BaseRetriever
-from src.clients.factory import EmbedderType, VectorStoreType
+from clients.base import BaseDocumentStore, BaseEmbedder, BaseRetriever
+from clients.factory import EmbedderType, VectorStoreType
+from haystack import Document
 
 logger = logging.getLogger(__name__)
 

@@ -13,7 +13,7 @@ from haystack_integrations.document_stores.elasticsearch import (
 )
 
 from config import get_settings
-from src.clients.base import BaseDocumentStore, BaseRetriever
+from clients.base import BaseDocumentStore, BaseRetriever
 
 logger = logging.getLogger(__name__)
 

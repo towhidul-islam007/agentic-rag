@@ -8,7 +8,7 @@ from haystack import Document
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
 from config import get_settings
-from src.clients.base import BaseEmbedder
+from clients.base import BaseEmbedder
 
 logger = logging.getLogger(__name__)
 

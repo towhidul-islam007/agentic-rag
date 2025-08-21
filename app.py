@@ -1,15 +1,17 @@
 import asyncio
 import logging
+
 from pathlib import Path
 from typing import Any, Coroutine
 
 import nest_asyncio
 import streamlit as st
+
+from document_management import DocumentManager
 from dotenv import load_dotenv
+from rag_system import AgenticRAG
 
 from config import get_settings
-from src.document_management import DocumentManager
-from src.rag_system import AgenticRAG
 
 # Apply nest_asyncio to allow nested event loops in Streamlit
 nest_asyncio.apply()

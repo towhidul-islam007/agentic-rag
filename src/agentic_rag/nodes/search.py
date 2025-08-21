@@ -8,9 +8,9 @@ import requests
 from bs4 import BeautifulSoup
 
 from config import get_settings
-from src.agentic_rag.models import WebSearchQuery
-from src.agentic_rag.nodes.base import BaseNode
-from src.agentic_rag.state import AgenticRAGState
+from agentic_rag.models import WebSearchQuery
+from agentic_rag.nodes.base import BaseNode
+from agentic_rag.state import AgenticRAGState
 
 # Get settings instance
 settings = get_settings()

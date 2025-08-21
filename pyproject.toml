@@ -1,10 +1,13 @@
 [tool.poetry]
-name = "vertex-ai-chatbot"
+name = "di-ai-router"
 version = "0.1.0"
-description = "A Streamlit chatbot app connected to Google Vertex AI"
-authors = ["Your Name <your.email@example.com>"]
+description = ""
+authors = ["Your Name <you@example.com>"]
 readme = "README.md"
-package-mode = false
+package-mode = true
+packages = [
+    { include = "*", from = "src" }
+]
 
 [tool.poetry.dependencies]
 python = "^3.12"
@@ -40,6 +43,3 @@ pre-commit = "^4.3.0"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
-
-[tool.poetry.scripts]
-start = "streamlit run app.py"

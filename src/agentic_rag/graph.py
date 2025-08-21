@@ -2,15 +2,14 @@
 
 from typing import Any
 
-from langgraph.graph import END, StateGraph
-
-from src.agentic_rag.edges import (
+from agentic_rag.edges import (
     decide_to_generate,
     grade_generation_v_documents_and_question,
     route_question,
 )
-from src.agentic_rag.nodes import RAGNodes
-from src.agentic_rag.state import AgenticRAGState
+from agentic_rag.nodes import RAGNodes
+from agentic_rag.state import AgenticRAGState
+from langgraph.graph import END, StateGraph
 
 
 def create_graph(gemini_model: str = "gemini-2.5-flash") -> Any:

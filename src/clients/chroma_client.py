@@ -10,7 +10,7 @@ from haystack_integrations.components.retrievers.chroma import ChromaEmbeddingRe
 from haystack_integrations.document_stores.chroma import ChromaDocumentStore
 
 from config import get_settings
-from src.clients.base import BaseDocumentStore, BaseRetriever
+from clients.base import BaseDocumentStore, BaseRetriever
 
 logger = logging.getLogger(__name__)
 

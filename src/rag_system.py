@@ -11,9 +11,9 @@ from haystack.components.converters import PyPDFToDocument, TextFileToDocument
 from haystack.components.preprocessors import DocumentSplitter
 from langchain_core.messages import HumanMessage
 
-from src.agentic_rag import create_graph
-from src.clients.haystack_wrappers import DocumentStoreWriter, EmbedderWrapper
-from src.utils import (
+from agentic_rag import create_graph
+from clients.haystack_wrappers import DocumentStoreWriter, EmbedderWrapper
+from utils import (
     get_document_count_sync,
     get_preferred_document_store,
     get_preferred_embedder,

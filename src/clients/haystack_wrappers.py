@@ -6,7 +6,7 @@ from typing import Any, Dict, List
 
 from haystack import Document, component
 
-from src.clients.base import BaseDocumentStore, BaseEmbedder
+from clients.base import BaseDocumentStore, BaseEmbedder
 
 logger = logging.getLogger(__name__)
 

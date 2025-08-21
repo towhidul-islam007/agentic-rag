@@ -2,8 +2,8 @@
 
 import logging
 
-from src.agentic_rag.state import AgenticRAGState
-from src.utils import get_document_count_sync
+from agentic_rag.state import AgenticRAGState
+from utils import get_document_count_sync
 
 logger = logging.getLogger(__name__)
 
