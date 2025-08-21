@@ -3,7 +3,9 @@
 import asyncio
 import logging
 
-from typing import Any
+from typing import List
+
+from haystack import Document
 
 from src.agentic_rag.nodes.base import BaseNode
 from src.agentic_rag.state import AgenticRAGState
@@ -28,20 +30,15 @@ class DocumentRetriever(BaseNode):
         try:
             # Embed the query synchronously (embedder is now sync)
             loop = asyncio.get_event_loop()
-            query_embedding_result = await loop.run_in_executor(
-                None, self.text_embedder.run, question
+            query_embedding = await loop.run_in_executor(
+                None, self.text_embedder.embed_query, question
             )
 
-            # Extract the embedding from the result dictionary
-            query_embedding = query_embedding_result.get("embedding", [])
-
             # Retrieve documents
-            def run_retriever() -> Any:
-                return self.retriever.run(query_embedding=query_embedding)
+            def run_retriever() -> List[Document]:
+                return self.retriever.retrieve_with_embedding(query_embedding)
 
-            result = await loop.run_in_executor(None, run_retriever)
-
-            documents = result.get("documents", [])
+            documents = await loop.run_in_executor(None, run_retriever)
             # Convert Document objects to strings for state
             doc_strings = [doc.content for doc in documents]
             state["documents"] = doc_strings
