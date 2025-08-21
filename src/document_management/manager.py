@@ -22,6 +22,11 @@ class DocumentManager:
     """Handles document upload and processing for the RAG system"""
 
     def __init__(self, upload_dir: Optional[str] = None) -> None:
+        """Initialize the document manager.
+
+        Args:
+            upload_dir: The upload directory path. If None, uses default from settings.
+        """
         if upload_dir is None:
             upload_dir = str(settings.upload_dir)
         self.upload_dir = Path(upload_dir)
@@ -31,7 +36,14 @@ class DocumentManager:
         self.supported_extensions = settings.supported_extensions
 
     async def save_uploaded_files(self, uploaded_files: List) -> List[str]:
-        """Save uploaded files and return their paths"""
+        """Save uploaded files and return their paths.
+
+        Args:
+            uploaded_files: The uploaded_files parameter.
+
+        Returns:
+            List[str]: String result.
+        """
         saved_paths = []
 
         for uploaded_file in uploaded_files:
@@ -62,12 +74,24 @@ class DocumentManager:
         return saved_paths
 
     def _write_file(self, file_path: Path, buffer: bytes) -> None:
-        """Helper method to write file synchronously"""
+        """Helper method to write file synchronously.
+
+        Args:
+            file_path: Path to the file or directory.
+            buffer: The buffer parameter.
+        """
         with Path.open(file_path, "wb") as f:
             f.write(buffer)
 
     async def process_docx_files(self, file_paths: List[str]) -> List[str]:
-        """Convert DOCX files to text files for processing"""
+        """Convert DOCX files to text files for processing.
+
+        Args:
+            file_paths: Path to the file or directory.
+
+        Returns:
+            List[str]: String result.
+        """
         processed_paths = []
 
         for file_path in file_paths:
@@ -99,7 +123,14 @@ class DocumentManager:
         return processed_paths
 
     def _process_docx_file(self, file_path: str) -> str:
-        """Helper method to process DOCX file synchronously"""
+        """Helper method to process DOCX file synchronously.
+
+        Args:
+            file_path: Path to the file or directory.
+
+        Returns:
+            str: String result.
+        """
         doc = DocxDocument(file_path)
         text_content = [
             paragraph.text for paragraph in doc.paragraphs if paragraph.text.strip()
@@ -107,17 +138,30 @@ class DocumentManager:
         return "\n\n".join(text_content)
 
     def _write_text_file(self, file_path: Path, content: str) -> None:
-        """Helper method to write text file synchronously"""
+        """Helper method to write text file synchronously.
+
+        Args:
+            file_path: Path to the file or directory.
+            content: The content parameter.
+        """
         with Path.open(file_path, "w", encoding="utf-8") as f:
             f.write(content)
 
     async def get_uploaded_files(self) -> List[str]:
-        """Get list of uploaded files"""
+        """Get list of uploaded files.
+
+        Returns:
+            List[str]: String result.
+        """
         loop = asyncio.get_event_loop()
         return await loop.run_in_executor(None, self._get_uploaded_files_sync)
 
     def _get_uploaded_files_sync(self) -> List[str]:
-        """Synchronous helper for getting uploaded files"""
+        """Synchronous helper for getting uploaded files.
+
+        Returns:
+            List[str]: String result.
+        """
         return [
             str(file_path)
             for file_path in self.upload_dir.glob("*")
@@ -128,7 +172,14 @@ class DocumentManager:
         ]
 
     async def delete_file(self, file_path: str) -> bool:
-        """Delete a file"""
+        """Delete a file.
+
+        Args:
+            file_path: Path to the file or directory.
+
+        Returns:
+            bool: True if successful, False otherwise.
+        """
         try:
             loop = asyncio.get_event_loop()
             await loop.run_in_executor(None, Path(file_path).unlink)
@@ -139,7 +190,11 @@ class DocumentManager:
             return False
 
     async def clear_all_files(self) -> bool:
-        """Clear all uploaded files"""
+        """Clear all uploaded files.
+
+        Returns:
+            bool: True if successful, False otherwise.
+        """
         try:
             loop = asyncio.get_event_loop()
             await loop.run_in_executor(None, self._clear_all_files_sync)
@@ -150,7 +205,7 @@ class DocumentManager:
             return False
 
     def _clear_all_files_sync(self) -> None:
-        """Synchronous helper for clearing all files"""
+        """Synchronous helper for clearing all files."""
         for file_path in self.upload_dir.glob("*"):
             if file_path.is_file():
                 file_path.unlink()

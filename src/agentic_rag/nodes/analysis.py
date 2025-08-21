@@ -10,9 +10,14 @@ logger = logging.getLogger(__name__)
 
 
 class QueryAnalyzer(BaseNode):
-    """Handles query analysis and routing logic"""
+    """Handles query analysis and routing logic."""
 
     def __init__(self, gemini_model: str = "gemini-2.5-flash") -> None:
+        """Initialize the query analyzer.
+
+        Args:
+            gemini_model: Gemini model name to use. Defaults to 'gemini-2.5-flash'.
+        """
         super().__init__(gemini_model)
         self.query_analyzer = self.create_llm(
             temperature=0.0, structured_output=QueryAnalysis
@@ -25,7 +30,14 @@ class QueryAnalyzer(BaseNode):
         )
 
     async def analyze_query(self, state: AgenticRAGState) -> AgenticRAGState:
-        """Analyze the query to understand intent and complexity"""
+        """Analyze the query to understand intent and complexity.
+
+        Args:
+            state: Current state object.
+
+        Returns:
+            AgenticRAGState: The result.
+        """
         question = state["question"]
 
         analysis_prompt = f"""
@@ -64,7 +76,14 @@ class QueryAnalyzer(BaseNode):
         return state
 
     async def route_question(self, state: AgenticRAGState) -> AgenticRAGState:
-        """Route question to appropriate retrieval method"""
+        """Route question to appropriate retrieval method.
+
+        Args:
+            state: Current state object.
+
+        Returns:
+            AgenticRAGState: The result.
+        """
         question = state["question"]
 
         routing_prompt = f"""
@@ -93,7 +112,14 @@ class QueryAnalyzer(BaseNode):
         return state
 
     async def transform_query(self, state: AgenticRAGState) -> AgenticRAGState:
-        """Transform the query to produce a better question"""
+        """Transform the query to produce a better question.
+
+        Args:
+            state: Current state object.
+
+        Returns:
+            AgenticRAGState: The result.
+        """
         question = state["question"]
 
         transform_prompt = f"""

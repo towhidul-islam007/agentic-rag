@@ -14,16 +14,28 @@ logger = logging.getLogger(__name__)
 
 
 class DocumentRetriever(BaseNode):
-    """Handles document retrieval from vector store"""
+    """Handles document retrieval from vector store."""
 
     def __init__(self, gemini_model: str = "gemini-2.5-flash") -> None:
+        """Initialize the document retriever.
+
+        Args:
+            gemini_model: The Gemini model name to use for LLM operations.
+        """
         super().__init__(gemini_model)
         # Initialize retriever and embedder
         self.retriever = get_preferred_retriever()
         self.text_embedder = get_preferred_embedder()
 
     async def retrieve(self, state: AgenticRAGState) -> AgenticRAGState:
-        """Retrieve documents"""
+        """Retrieve documents based on the question in the state.
+
+        Args:
+            state: The current state containing the question.
+
+        Returns:
+            AgenticRAGState: Updated state with retrieved documents.
+        """
         question = state["question"]
 
         try:
@@ -35,6 +47,11 @@ class DocumentRetriever(BaseNode):
 
             # Retrieve documents
             def run_retriever() -> List[Document]:
+                """Run Retriever.
+
+                Returns:
+                    List[Document]: List of results.
+                """
                 return self.retriever.retrieve_with_embedding(query_embedding)
 
             documents = await loop.run_in_executor(None, run_retriever)

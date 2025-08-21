@@ -5,10 +5,11 @@ import logging
 from enum import Enum
 from typing import Any, Optional
 
-from config import get_settings
 from clients.base import BaseDocumentStore, BaseEmbedder, BaseRetriever
 from clients.chroma_client import ChromaDocumentStoreWrapper, ChromaRetriever
 from clients.google_embedder import GoogleEmbedder
+
+from config import get_settings
 
 logger = logging.getLogger(__name__)
 
@@ -27,9 +28,10 @@ class EmbedderType(Enum):
 
 
 class ClientFactory:
-    """Factory for creating vector store and embedder clients"""
+    """Factory for creating vector store and embedder clients."""
 
     def __init__(self) -> None:
+        """Initialize the client factory."""
         self.settings = get_settings()
         self._document_stores = {}
         self._retrievers = {}
@@ -40,7 +42,15 @@ class ClientFactory:
         embedder_type: EmbedderType = EmbedderType.GOOGLE,
         model: Optional[str] = None,
     ) -> BaseEmbedder:
-        """Get or create an embedder instance"""
+        """Get or create an embedder instance.
+
+        Args:
+            embedder_type: Type of embedder to create. Defaults to Google.
+            model: Model name to use. If None, uses default.
+
+        Returns:
+            BaseEmbedder: The result.
+        """
         cache_key = f"{embedder_type.value}_{model or 'default'}"
 
         if cache_key not in self._embedders:
@@ -57,7 +67,16 @@ class ClientFactory:
     def get_document_store(
         self, store_type: VectorStoreType = VectorStoreType.CHROMA, **kwargs: Any
     ) -> BaseDocumentStore:
-        """Get or create a document store instance"""
+        """Get or create a document store instance.
+
+        Args:
+            store_type: The store_type parameter. Defaults to VectorStoreType.CHROMA.
+            **kwargs: Additional keyword arguments passed to the document store
+                constructor.
+
+        Returns:
+            BaseDocumentStore: The result.
+        """
         cache_key = f"{store_type.value}_{hash(frozenset(kwargs.items()))}"
 
         if cache_key not in self._document_stores:
@@ -87,7 +106,18 @@ class ClientFactory:
         top_k: Optional[int] = None,
         **kwargs: Any,
     ) -> BaseRetriever:
-        """Get or create a retriever instance"""
+        """Get or create a retriever instance.
+
+        Args:
+            store_type: The store_type parameter. Defaults to VectorStoreType.CHROMA.
+            document_store: Document to process. If None, uses default.
+            top_k: Maximum number of items to return. If None, uses default.
+            **kwargs: Additional keyword arguments passed to the document store
+                constructor.
+
+        Returns:
+            BaseRetriever: The result.
+        """
         if document_store is None:
             document_store = self.get_document_store(store_type, **kwargs)
 
@@ -112,14 +142,18 @@ class ClientFactory:
         return self._retrievers[cache_key]
 
     def get_preferred_store_type(self) -> VectorStoreType:
-        """Get the preferred vector store type based on configuration"""
+        """Get the preferred vector store type based on configuration.
+
+        Returns:
+            VectorStoreType: The result.
+        """
         # Prefer Elasticsearch if configured, otherwise use ChromaDB
         if self.settings.elasticsearch_url and self.settings.elasticsearch_api_key:
             return VectorStoreType.ELASTICSEARCH
         return VectorStoreType.CHROMA
 
     def clear_cache(self) -> None:
-        """Clear all cached instances"""
+        """Clear all cached instances."""
         self._document_stores.clear()
         self._retrievers.clear()
         self._embedders.clear()
@@ -131,7 +165,11 @@ _factory = None
 
 
 def get_factory() -> ClientFactory:
-    """Get the global client factory instance"""
+    """Get the global client factory instance.
+
+    Returns:
+        ClientFactory: The result.
+    """
     global _factory
     if _factory is None:
         _factory = ClientFactory()
@@ -142,14 +180,31 @@ def get_factory() -> ClientFactory:
 def get_embedder(
     embedder_type: EmbedderType = EmbedderType.GOOGLE, model: Optional[str] = None
 ) -> BaseEmbedder:
-    """Get an embedder instance"""
+    """Get an embedder instance.
+
+    Args:
+        embedder_type: The embedder_type parameter. Defaults to EmbedderType.GOOGLE.
+        model: Model name or configuration. If None, uses default.
+
+    Returns:
+        BaseEmbedder: The result.
+    """
     return get_factory().get_embedder(embedder_type, model)
 
 
 def get_document_store(
     store_type: Optional[VectorStoreType] = None, **kwargs: Any
 ) -> BaseDocumentStore:
-    """Get a document store instance"""
+    """Get a document store instance.
+
+    Args:
+        store_type: The store_type parameter. If None, uses default.
+        **kwargs: Additional keyword arguments passed to the document store
+            constructor.
+
+    Returns:
+        BaseDocumentStore: The result.
+    """
     factory = get_factory()
     if store_type is None:
         store_type = factory.get_preferred_store_type()
@@ -162,7 +217,18 @@ def get_retriever(
     top_k: Optional[int] = None,
     **kwargs: Any,
 ) -> BaseRetriever:
-    """Get a retriever instance"""
+    """Get a retriever instance.
+
+    Args:
+        store_type: The store_type parameter. If None, uses default.
+        document_store: Document to process. If None, uses default.
+        top_k: Maximum number of items to return. If None, uses default.
+        **kwargs: Additional keyword arguments passed to the document store
+            constructor.
+
+    Returns:
+        BaseRetriever: The result.
+    """
     factory = get_factory()
     if store_type is None:
         store_type = factory.get_preferred_store_type()

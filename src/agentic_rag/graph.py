@@ -13,7 +13,14 @@ from langgraph.graph import END, StateGraph
 
 
 def create_graph(gemini_model: str = "gemini-2.5-flash") -> Any:
-    """Create and compile the RAG workflow graph"""
+    """Create and compile the RAG workflow graph.
+
+    Args:
+        gemini_model: The Gemini model name to use for LLM operations.
+
+    Returns:
+        Any: Compiled LangGraph workflow.
+    """
     # Initialize nodes
     nodes = RAGNodes(gemini_model=gemini_model)
 

@@ -5,12 +5,12 @@ import logging
 
 import requests
 
-from bs4 import BeautifulSoup
-
-from config import get_settings
 from agentic_rag.models import WebSearchQuery
 from agentic_rag.nodes.base import BaseNode
 from agentic_rag.state import AgenticRAGState
+from bs4 import BeautifulSoup
+
+from config import get_settings
 
 # Get settings instance
 settings = get_settings()
@@ -19,16 +19,28 @@ logger = logging.getLogger(__name__)
 
 
 class WebSearcher(BaseNode):
-    """Handles web search functionality"""
+    """Handles web search functionality."""
 
     def __init__(self, gemini_model: str = "gemini-2.5-flash") -> None:
+        """Initialize the web searcher.
+
+        Args:
+            gemini_model: Gemini model name to use. Defaults to 'gemini-2.5-flash'.
+        """
         super().__init__(gemini_model)
         self.web_search_optimizer = self.create_llm(
             temperature=0.0, structured_output=WebSearchQuery
         )
 
     async def web_search_node(self, state: AgenticRAGState) -> AgenticRAGState:
-        """Web search based on the question"""
+        """Web search based on the question.
+
+        Args:
+            state: Current state object.
+
+        Returns:
+            AgenticRAGState: The result.
+        """
         question = state["question"]
 
         # Create a focused search query

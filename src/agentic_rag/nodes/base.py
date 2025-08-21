@@ -24,13 +24,22 @@ _llm_executor = concurrent.futures.ThreadPoolExecutor(
 def run_llm_sync_safe(
     llm_func: Callable[[str], Awaitable[Any]], prompt: str
 ) -> Callable[[], Any]:
-    """
-    Run LLM async function synchronously in a separate thread.
+    """Run LLM async function synchronously in a separate thread.
 
-    This completely avoids event loop conflicts by using synchronous execution.
+    Args:
+        llm_func: The llm_func parameter.
+        prompt: The prompt parameter.
+
+    Returns:
+        Callable[[], Any]: The result.
     """
 
     def _run_sync() -> Any:
+        """Run Sync.
+
+        Returns:
+            Any: The result of the operation.
+        """
         try:
             # Import nest_asyncio to patch asyncio if needed
             try:
@@ -53,6 +62,11 @@ class BaseNode:
     """Base class for all nodes with common LLM initialization"""
 
     def __init__(self, gemini_model: str = "gemini-2.5-flash") -> None:
+        """Initialize the base node with LLM configuration.
+
+        Args:
+            gemini_model: Model name or configuration. Defaults to 'gemini-2.5-flash'.
+        """
         # Initialize LLM config
         self.llm_config = (
             {"model": gemini_model, "google_api_key": settings.google_api_key}
@@ -63,14 +77,30 @@ class BaseNode:
     def create_llm(
         self, temperature: float = 0.0, structured_output: Any = None
     ) -> Any:
-        """Create an LLM instance with the given configuration"""
+        """Create an LLM instance with the given configuration.
+
+        Args:
+            temperature: The temperature setting for the LLM (0.0 to 1.0).
+            structured_output: Optional structured output schema for the LLM.
+
+        Returns:
+            Any: Configured LLM instance.
+        """
         llm = ChatGoogleGenerativeAI(temperature=temperature, **self.llm_config)
         if structured_output:
             return llm.with_structured_output(structured_output)
         return llm
 
     async def run_llm_call(self, llm: Any, prompt: str) -> Any:
-        """Run an LLM call safely in a separate thread"""
+        """Run an LLM call safely in a separate thread.
+
+        Args:
+            llm: The LLM instance to call.
+            prompt: The prompt string to send to the LLM.
+
+        Returns:
+            Any: The LLM response.
+        """
         loop = asyncio.get_event_loop()
         llm_task = run_llm_sync_safe(llm.ainvoke, prompt)
         return await loop.run_in_executor(_llm_executor, llm_task)

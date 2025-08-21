@@ -5,20 +5,25 @@ import logging
 from pathlib import Path
 from typing import List, Optional
 
+from clients.base import BaseDocumentStore, BaseRetriever
 from haystack import Document
 from haystack_integrations.components.retrievers.chroma import ChromaEmbeddingRetriever
 from haystack_integrations.document_stores.chroma import ChromaDocumentStore
 
 from config import get_settings
-from clients.base import BaseDocumentStore, BaseRetriever
 
 logger = logging.getLogger(__name__)
 
 
 class ChromaDocumentStoreWrapper(BaseDocumentStore):
-    """ChromaDB document store wrapper"""
+    """ChromaDB document store wrapper."""
 
     def __init__(self, collection_name: str = "documents") -> None:
+        """Initialize the ChromaDB document store wrapper.
+
+        Args:
+            collection_name: Name of the ChromaDB collection. Defaults to 'documents'.
+        """
         self.settings = get_settings()
 
         # Create ChromaDB document store
@@ -40,7 +45,11 @@ class ChromaDocumentStoreWrapper(BaseDocumentStore):
             logger.info("ChromaDB initialized with fallback collection")
 
     def write_documents(self, documents: List[Document]) -> None:
-        """Write documents to ChromaDB"""
+        """Write documents to ChromaDB.
+
+        Args:
+            documents: Document to process.
+        """
         try:
             self.document_store.write_documents(documents)
             logger.info(f"Successfully wrote {len(documents)} documents to ChromaDB")
@@ -49,7 +58,11 @@ class ChromaDocumentStoreWrapper(BaseDocumentStore):
             raise
 
     def count_documents(self) -> int:
-        """Count documents in ChromaDB"""
+        """Count documents in ChromaDB.
+
+        Returns:
+            int: Integer result.
+        """
         try:
             return self.document_store.count_documents()
         except Exception as e:
@@ -57,7 +70,11 @@ class ChromaDocumentStoreWrapper(BaseDocumentStore):
             return 0
 
     def delete_documents(self, document_ids: List[str]) -> None:
-        """Delete documents from ChromaDB"""
+        """Delete documents from ChromaDB.
+
+        Args:
+            document_ids: Document to process.
+        """
         try:
             self.document_store.delete_documents(document_ids)
             logger.info(f"Successfully deleted {len(document_ids)} documents")
@@ -66,7 +83,11 @@ class ChromaDocumentStoreWrapper(BaseDocumentStore):
             raise
 
     def get_all_documents(self) -> List[Document]:
-        """Get all documents from ChromaDB"""
+        """Get all documents from ChromaDB.
+
+        Returns:
+            List[Document]: List of results.
+        """
         try:
             return self.document_store.get_all_documents()
         except Exception as e:
@@ -75,11 +96,17 @@ class ChromaDocumentStoreWrapper(BaseDocumentStore):
 
 
 class ChromaRetriever(BaseRetriever):
-    """ChromaDB retriever implementation"""
+    """ChromaDB retriever implementation."""
 
     def __init__(
         self, document_store: ChromaDocumentStoreWrapper, top_k: Optional[int] = None
     ) -> None:
+        """Initialize the ChromaDB retriever.
+
+        Args:
+            document_store: ChromaDB document store wrapper instance.
+            top_k: Maximum number of documents to retrieve. If None, uses default.
+        """
         self.settings = get_settings()
         self.document_store = document_store
         self.top_k = top_k or self.settings.default_top_k
@@ -90,7 +117,15 @@ class ChromaRetriever(BaseRetriever):
         logger.info(f"ChromaRetriever initialized with top_k: {self.top_k}")
 
     def retrieve(self, query: str, top_k: Optional[int] = None) -> List[Document]:
-        """Retrieve documents based on query"""
+        """Retrieve documents based on query.
+
+        Args:
+            query: Query string.
+            top_k: Maximum number of items to return. If None, uses default.
+
+        Returns:
+            List[Document]: List of results.
+        """
         # Note: This would require query embedding first
         # For now, this is a placeholder - actual implementation would need
         # the embedder to convert query to embedding first
@@ -101,7 +136,15 @@ class ChromaRetriever(BaseRetriever):
     def retrieve_with_embedding(
         self, query_embedding: List[float], top_k: Optional[int] = None
     ) -> List[Document]:
-        """Retrieve documents based on query embedding"""
+        """Retrieve documents based on query embedding.
+
+        Args:
+            query_embedding: Query string.
+            top_k: Maximum number of items to return. If None, uses default.
+
+        Returns:
+            List[Document]: List of results.
+        """
         try:
             k = top_k or self.top_k
             result = self.retriever.run(query_embedding=query_embedding, top_k=k)

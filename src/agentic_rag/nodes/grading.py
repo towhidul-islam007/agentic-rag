@@ -10,16 +10,28 @@ logger = logging.getLogger(__name__)
 
 
 class DocumentGrader(BaseNode):
-    """Handles document relevance grading"""
+    """Handles document relevance grading."""
 
     def __init__(self, gemini_model: str = "gemini-2.5-flash") -> None:
+        """Initialize the document grader.
+
+        Args:
+            gemini_model: Gemini model name to use. Defaults to 'gemini-2.5-flash'.
+        """
         super().__init__(gemini_model)
         self.retrieval_grader = self.create_llm(
             temperature=0.0, structured_output=RelevanceGrade
         )
 
     async def grade_documents(self, state: AgenticRAGState) -> AgenticRAGState:
-        """Grade document relevance to question"""
+        """Grade document relevance to question.
+
+        Args:
+            state: Current state object.
+
+        Returns:
+            AgenticRAGState: The result.
+        """
         question = state["question"]
         documents = state.get("documents", [])
 
@@ -73,9 +85,14 @@ class DocumentGrader(BaseNode):
 
 
 class ResponseGrader(BaseNode):
-    """Handles response quality grading"""
+    """Handles response quality grading."""
 
     def __init__(self, gemini_model: str = "gemini-2.5-flash") -> None:
+        """Initialize the response grader.
+
+        Args:
+            gemini_model: Gemini model name to use. Defaults to 'gemini-2.5-flash'.
+        """
         super().__init__(gemini_model)
         self.hallucination_grader = self.create_llm(
             temperature=0.0, structured_output=HallucinationGrade
@@ -87,7 +104,14 @@ class ResponseGrader(BaseNode):
     async def grade_generation_v_documents_and_question(
         self, state: AgenticRAGState
     ) -> AgenticRAGState:
-        """Determines whether generation is grounded in document and answers question"""
+        """Determines whether generation is grounded in document and answers question.
+
+        Args:
+            state: Current state object.
+
+        Returns:
+            AgenticRAGState: The result.
+        """
         question = state["question"]
         documents = state.get("filtered_documents", [])
         generation = state.get("generation", "")

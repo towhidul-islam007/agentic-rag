@@ -6,13 +6,12 @@ import logging
 from pathlib import Path
 from typing import Any, Dict, List
 
+from agentic_rag import create_graph
+from clients.haystack_wrappers import DocumentStoreWriter, EmbedderWrapper
 from haystack import Document, Pipeline
 from haystack.components.converters import PyPDFToDocument, TextFileToDocument
 from haystack.components.preprocessors import DocumentSplitter
 from langchain_core.messages import HumanMessage
-
-from agentic_rag import create_graph
-from clients.haystack_wrappers import DocumentStoreWriter, EmbedderWrapper
 from utils import (
     get_document_count_sync,
     get_preferred_document_store,
@@ -23,9 +22,14 @@ logger = logging.getLogger(__name__)
 
 
 class AgenticRAG:
-    """Main Agentic RAG system"""
+    """Main Agentic RAG system."""
 
     def __init__(self, gemini_model: str = "gemini-2.5-flash") -> None:
+        """Initialize the Agentic RAG system.
+
+        Args:
+            gemini_model: The Gemini model name to use for LLM operations.
+        """
         self.gemini_model = gemini_model
 
         # Initialize document processing pipeline
@@ -35,7 +39,7 @@ class AgenticRAG:
         self.app = create_graph(gemini_model)
 
     def _build_indexing_pipeline(self) -> None:
-        """Build document indexing pipeline"""
+        """Build document indexing pipeline."""
         document_store = get_preferred_document_store()
 
         # Initialize document embedder (Google embeddings preferred)
@@ -62,7 +66,11 @@ class AgenticRAG:
         self.indexing_pipeline.connect("embedder", "writer")
 
     def _create_metadata_cleaner(self) -> object:
-        """Create a component to clean metadata for ChromaDB compatibility"""
+        """Create a component to clean metadata for ChromaDB compatibility.
+
+        Returns:
+            object: The result.
+        """
         from typing import Any, Dict, List
 
         from haystack import component
@@ -71,7 +79,14 @@ class AgenticRAG:
         class MetadataCleaner:
             @component.output_types(documents=List[Document])
             def run(self, documents: List[Document]) -> Dict[str, Any]:
-                """Clean metadata to only include supported types"""
+                """Clean metadata to only include supported types.
+
+                Args:
+                    documents: Document to process.
+
+                Returns:
+                    Dict[str, Any]: String result.
+                """
                 cleaned_docs = []
                 for doc in documents:
                     # Create new metadata with only supported types
@@ -99,7 +114,14 @@ class AgenticRAG:
         return MetadataCleaner()
 
     async def add_documents(self, file_paths: List[str]) -> bool:
-        """Add documents to the vector store"""
+        """Add documents to the vector store.
+
+        Args:
+            file_paths: List of file paths to add to the vector store.
+
+        Returns:
+            bool: True if documents were successfully added, False otherwise.
+        """
         try:
             documents = []
 
@@ -122,6 +144,11 @@ class AgenticRAG:
             if documents:
                 # Run the pipeline synchronously in executor
                 def run_pipeline() -> Dict[str, Any]:
+                    """Run Pipeline.
+
+                    Returns:
+                        Dict[str, Any]: String result.
+                    """
                     return self.indexing_pipeline.run(
                         {"splitter": {"documents": documents}}
                     )
@@ -142,7 +169,14 @@ class AgenticRAG:
         return False
 
     async def query(self, question: str) -> Dict[str, Any]:
-        """Query the agentic RAG system"""
+        """Query the agentic RAG system.
+
+        Args:
+            question: The question to ask the RAG system.
+
+        Returns:
+            Dict[str, Any]: The response containing the answer and metadata.
+        """
         try:
             # Prepare initial state
             inputs = {
@@ -198,5 +232,9 @@ class AgenticRAG:
             }
 
     def get_document_count(self) -> int:
-        """Get the number of documents in the store"""
+        """Get the number of documents in the store.
+
+        Returns:
+            int: Total number of documents in the vector store.
+        """
         return get_document_count_sync()

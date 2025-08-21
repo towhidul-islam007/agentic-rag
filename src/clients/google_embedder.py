@@ -4,19 +4,24 @@ import logging
 
 from typing import List
 
+from clients.base import BaseEmbedder
 from haystack import Document
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
 from config import get_settings
-from clients.base import BaseEmbedder
 
 logger = logging.getLogger(__name__)
 
 
 class GoogleEmbedder(BaseEmbedder):
-    """Google Generative AI embedder implementation"""
+    """Google Generative AI embedder implementation."""
 
     def __init__(self, model: str = "models/embedding-001") -> None:
+        """Initialize the Google embedder.
+
+        Args:
+            model: Google embedding model name. Defaults to 'models/embedding-001'.
+        """
         self.settings = get_settings()
 
         if not self.settings.google_api_key:

@@ -4,18 +4,22 @@ import logging
 
 from typing import Any, Dict, List
 
-from haystack import Document, component
-
 from clients.base import BaseDocumentStore, BaseEmbedder
+from haystack import Document, component
 
 logger = logging.getLogger(__name__)
 
 
 @component
 class EmbedderWrapper:
-    """Haystack component wrapper for BaseEmbedder implementations"""
+    """Haystack component wrapper for BaseEmbedder implementations."""
 
     def __init__(self, embedder: BaseEmbedder) -> None:
+        """Initialize the embedder wrapper.
+
+        Args:
+            embedder: The base embedder instance to wrap.
+        """
         self.embedder = embedder
 
     @component.output_types(documents=List[Document])
@@ -39,9 +43,14 @@ class EmbedderWrapper:
 
 @component
 class DocumentStoreWriter:
-    """Haystack component wrapper for BaseDocumentStore implementations"""
+    """Haystack component wrapper for BaseDocumentStore implementations."""
 
     def __init__(self, document_store: BaseDocumentStore) -> None:
+        """Initialize the document store writer.
+
+        Args:
+            document_store: The base document store instance to wrap.
+        """
         self.document_store = document_store
 
     @component.output_types(documents_written=int)

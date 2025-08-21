@@ -9,16 +9,28 @@ logger = logging.getLogger(__name__)
 
 
 class ResponseGenerator(BaseNode):
-    """Handles response generation"""
+    """Handles response generation."""
 
     def __init__(self, gemini_model: str = "gemini-2.5-flash") -> None:
+        """Initialize the response generator.
+
+        Args:
+            gemini_model: Gemini model name to use. Defaults to 'gemini-2.5-flash'.
+        """
         super().__init__(gemini_model)
         self.generator = self.create_llm(
             temperature=0.3
         )  # Higher temperature for generation
 
     async def generate(self, state: AgenticRAGState) -> AgenticRAGState:
-        """Generate answer"""
+        """Generate answer.
+
+        Args:
+            state: Current state object.
+
+        Returns:
+            AgenticRAGState: The result.
+        """
         question = state["question"]
         documents = state.get("filtered_documents", [])
         web_results = state.get("web_results", [])
