@@ -1,5 +1,7 @@
 """Base abstract classes for vector stores, embedders, and LLMs"""
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from typing import Any, List, Optional
 
@@ -153,7 +155,7 @@ class BaseLLM(ABC):
         ...
 
     @abstractmethod
-    def with_structured_output(self, schema: Any) -> "BaseLLM":
+    def with_structured_output(self, schema: Any) -> BaseLLM:
         """
         Configure LLM to return structured output
 

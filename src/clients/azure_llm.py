@@ -1,5 +1,7 @@
 """Azure OpenAI LLM client implementation"""
 
+from __future__ import annotations
+
 import logging
 
 from typing import Any
@@ -110,7 +112,7 @@ class AzureOpenAILLMWrapper(BaseLLM):
         # Otherwise, extract content from the response
         return response.content if hasattr(response, "content") else str(response)
 
-    def with_structured_output(self, schema: Any) -> "AzureOpenAILLMWrapper":
+    def with_structured_output(self, schema: Any) -> AzureOpenAILLMWrapper:
         """Configure LLM to return structured output.
 
         Args:

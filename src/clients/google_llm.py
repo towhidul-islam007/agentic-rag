@@ -1,5 +1,7 @@
 """Google Generative AI LLM client implementation"""
 
+from __future__ import annotations
+
 import logging
 
 from typing import Any
@@ -92,7 +94,7 @@ class GoogleLLMWrapper(BaseLLM):
         # Otherwise, extract content from the response
         return response.content if hasattr(response, "content") else str(response)
 
-    def with_structured_output(self, schema: Any) -> "GoogleLLMWrapper":
+    def with_structured_output(self, schema: Any) -> GoogleLLMWrapper:
         """Configure LLM to return structured output.
 
         Args:

@@ -1,5 +1,7 @@
 """Configuration settings for the RAG system using Pydantic Settings"""
 
+from __future__ import annotations
+
 from functools import lru_cache
 from pathlib import Path
 from typing import Optional, Set
@@ -146,7 +148,7 @@ class Settings(BaseSettings):
         return v
 
     @model_validator(mode="after")
-    def validate_chunk_overlap_and_credentials(self) -> "Settings":
+    def validate_chunk_overlap_and_credentials(self) -> Settings:
         """Validate chunk overlap and Google credentials"""
         # Validate chunk overlap
         if self.chunk_overlap >= self.max_chunk_size:
