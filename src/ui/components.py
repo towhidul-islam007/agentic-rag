@@ -41,6 +41,9 @@ def initialize_session_state() -> None:
     if "messages" not in st.session_state:
         st.session_state.messages = []
 
+    if "show_document_management" not in st.session_state:
+        st.session_state.show_document_management = False
+
 
 @st.cache_resource
 def init_rag_system(model_name: str) -> AgenticRAG | None:
@@ -155,13 +158,17 @@ def handle_user_input(prompt: str) -> None:
 
 def render_chat_interface() -> None:
     """Render the main chat interface."""
-    # Display chat history
-    for message in st.session_state.messages:
-        display_chat_message(message)
+    # Show either chat interface or document management
+    if st.session_state.show_document_management:
+        render_document_management_content()
+    else:
+        # Display chat history
+        for message in st.session_state.messages:
+            display_chat_message(message)
 
-    # Chat input
-    if prompt := st.chat_input("What would you like to know?"):
-        handle_user_input(prompt)
+        # Chat input
+        if prompt := st.chat_input("What would you like to know?"):
+            handle_user_input(prompt)
 
 
 def handle_document_upload(uploaded_files: list) -> None:
@@ -201,8 +208,8 @@ def handle_document_upload(uploaded_files: list) -> None:
             st.error(f"Error processing documents: {e}")
 
 
-def render_document_management() -> None:
-    """Render the document management interface."""
+def render_document_management_content() -> None:
+    """Render the document management interface content."""
     st.header("📚 Document Management")
 
     if not (st.session_state.document_manager and st.session_state.rag_system):
@@ -303,41 +310,30 @@ def render_system_info() -> None:
         st.error("❌ RAG System Unavailable")
 
 
-def render_help_section() -> None:
-    """Render the help and usage information in the sidebar."""
-    st.divider()
-
-    if st.button("🗑️ Clear Chat History"):
-        st.session_state.messages = []
-        # Reset chat history to start fresh
-        if "chat_history" in st.session_state:
-            del st.session_state.chat_history
-        st.rerun()
-
-    st.divider()
-
-    # Help section
-    st.header("❓ How to Use")
-    st.write("1. **Upload documents** using the file uploader")
-    st.write(
-        "2. **Ask questions** - the system will intelligently search your "
-        "documents and/or the web"
-    )
-    st.write(
-        "3. **View search details** in the expandable sections to see how "
-        "your query was processed"
-    )
-
-    st.subheader("💡 Tips")
-    st.write("• Upload PDFs, text files, or Word documents")
-    st.write("• Ask specific questions about your documents")
-    st.write("• Ask general questions for web search")
-    st.write("• The system will combine sources when helpful")
-
-
 def render_sidebar() -> None:
     """Render the complete sidebar interface."""
     with st.sidebar:
+        # Document management toggle button
+        if st.button(
+            "📚 Document Management"
+            if not st.session_state.show_document_management
+            else "💬 Back to Chat",
+            key="toggle_doc_mgmt",
+            use_container_width=True,
+        ):
+            st.session_state.show_document_management = (
+                not st.session_state.show_document_management
+            )
+            st.rerun()
+
+        st.divider()
+
+        # Model selection
         render_model_selector()
-        render_system_info()
-        render_help_section()
+
+        st.divider()
+
+        # Clear chat history button
+        if st.button("🗑️ Clear Chat History", use_container_width=True):
+            st.session_state.messages = []
+            st.rerun()

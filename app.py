@@ -5,8 +5,8 @@ allowing users to interact with documents and web search through a chat interfac
 """
 
 import logging
+
 import nest_asyncio
-import streamlit as st
 
 from dotenv import load_dotenv
 
@@ -15,7 +15,6 @@ from src.ui import (
     initialize_session_state,
     initialize_systems,
     render_chat_interface,
-    render_document_management,
     render_sidebar,
     validate_configuration,
 )
@@ -38,16 +37,8 @@ def main() -> None:
     initialize_session_state()
     initialize_systems()
 
-    # Create main layout
-    col1, col2 = st.columns([2, 1])
-
-    # Main chat interface
-    with col1:
-        render_chat_interface()
-
-    # Document management
-    with col2:
-        render_document_management()
+    # Main chat interface (full width)
+    render_chat_interface()
 
     # Sidebar
     render_sidebar()
