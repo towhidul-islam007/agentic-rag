@@ -32,7 +32,7 @@ class Settings(BaseSettings):
         default=None, description="Azure OpenAI endpoint URL"
     )
     azure_openai_api_version: str = Field(
-        default="2024-02-01", description="Azure OpenAI API version"
+        default="2025-04-01-preview", description="Azure OpenAI API version"
     )
     azure_openai_deployment_name: str = Field(
         default="gpt-4", description="Azure OpenAI deployment/model name"
@@ -66,9 +66,6 @@ class Settings(BaseSettings):
     default_llm_model: str = Field(
         default="gemini-2.5-flash", description="Default LLM model to use"
     )
-    llm_provider: str = Field(
-        default="google", description="LLM provider to use: 'google' or 'azure'"
-    )
 
     # Document Processing Configuration
     max_chunk_size: int = Field(
@@ -98,38 +95,42 @@ class Settings(BaseSettings):
         description="Supported file extensions for upload",
     )
 
-    # Available LLM models configuration
+    # Available LLM models configuration organized by provider
     available_models: dict = Field(
         default={
-            "gemini-2.5-pro": {
-                "name": "Gemini 2.5 Pro",
-                "description": "Our most advanced reasoning model to date",
-            },
-            "gemini-2.5-flash": {
-                "name": "Gemini 2.5 Flash",
-                "description": (
-                    "Best price-performance, offering well-rounded capabilities"
-                ),
-            },
-            "gemini-2.5-flash-lite": {
-                "name": "Gemini 2.5 Flash-Lite",
-                "description": (
-                    "Most cost effective model that supports high throughput tasks"
-                ),
-            },
-            "gemini-2.0-flash-exp": {
-                "name": "Gemini 2.0 Flash",
-                "description": "Newest multimodal model, with next generation features",
-            },
-            "gemini-2.0-flash-lite": {
-                "name": "Gemini 2.0 Flash-Lite",
-                "description": (
-                    "Gemini 2.0 Flash model optimized for cost efficiency "
-                    "and low latency"
-                ),
+            "google": {
+                "gemini-2.5-pro": {
+                    "name": "Gemini 2.5 Pro",
+                    "description": "Our most advanced reasoning model to date",
+                },
+                "gemini-2.5-flash": {
+                    "name": "Gemini 2.5 Flash",
+                    "description": (
+                        "Best price-performance, offering well-rounded capabilities"
+                    ),
+                },
+                "gemini-2.5-flash-lite": {
+                    "name": "Gemini 2.5 Flash-Lite",
+                    "description": (
+                        "Most cost effective model that supports high throughput tasks"
+                    ),
+                },
+                "gemini-2.0-flash-exp": {
+                    "name": "Gemini 2.0 Flash",
+                    "description": (
+                        "Newest multimodal model, with next generation features"
+                    ),
+                },
+                "gemini-2.0-flash-lite": {
+                    "name": "Gemini 2.0 Flash-Lite",
+                    "description": (
+                        "Gemini 2.0 Flash model optimized for cost efficiency "
+                        "and low latency"
+                    ),
+                },
             },
         },
-        description="Available LLM models and their descriptions",
+        description="Available LLM models organized by provider",
     )
 
     model_config = {
@@ -155,24 +156,10 @@ class Settings(BaseSettings):
             raise ValueError("chunk_overlap must be less than max_chunk_size")
 
         # Validate Google credentials
-        if (
-            self.llm_provider == "google"
-            and not self.google_cloud_project
-            and not self.google_api_key
-        ):
+        if not self.google_cloud_project and not self.google_api_key:
             msg = (
                 "Either google_cloud_project or google_api_key must be set "
-                "when using Google LLM provider"
-            )
-            raise ValueError(msg)
-
-        # Validate Azure OpenAI credentials
-        if self.llm_provider == "azure" and (
-            not self.azure_openai_api_key or not self.azure_openai_endpoint
-        ):
-            msg = (
-                "azure_openai_api_key and azure_openai_endpoint must be set "
-                "when using Azure LLM provider"
+                "for Google LLM provider"
             )
             raise ValueError(msg)
 
@@ -188,20 +175,8 @@ class Settings(BaseSettings):
         """Additional validation with detailed error messages"""
         errors = []
 
-        if self.llm_provider == "google":
-            if not self.google_cloud_project and not self.google_api_key:
-                errors.append(
-                    "Either GOOGLE_CLOUD_PROJECT or GOOGLE_API_KEY must be set"
-                )
-        elif self.llm_provider == "azure":
-            if not self.azure_openai_api_key:
-                errors.append(
-                    "AZURE_OPENAI_API_KEY must be set when using Azure provider"
-                )
-            if not self.azure_openai_endpoint:
-                errors.append(
-                    "AZURE_OPENAI_ENDPOINT must be set when using Azure provider"
-                )
+        if not self.google_cloud_project and not self.google_api_key:
+            errors.append("Either GOOGLE_CLOUD_PROJECT or GOOGLE_API_KEY must be set")
 
         if not self.chroma_db_path.exists():
             errors.append(f"ChromaDB path does not exist: {self.chroma_db_path}")
@@ -211,10 +186,45 @@ class Settings(BaseSettings):
 
         return errors
 
+    def get_available_models_for_provider(self, provider: Optional[str] = None) -> dict:
+        """Get available models for a specific provider.
+
+        Args:
+            provider: The provider name. If None, uses 'google'.
+
+        Returns:
+            dict: Available models for the specified provider.
+        """
+        provider = provider or "google"
+        return self.available_models.get(provider, {})
+
+    def get_all_providers(self) -> list[str]:
+        """Get list of all available providers.
+
+        Returns:
+            list[str]: List of provider names.
+        """
+        return list(self.available_models.keys())
+
+    def is_valid_model_for_provider(
+        self, model: str, provider: Optional[str] = None
+    ) -> bool:
+        """Check if a model is valid for the specified provider.
+
+        Args:
+            model: The model name to check.
+            provider: The provider name. If None, uses 'google'.
+
+        Returns:
+            bool: True if the model is valid for the provider.
+        """
+        provider = provider or "google"
+        available_models = self.get_available_models_for_provider(provider)
+        return model in available_models
+
     def get_config_summary(self) -> dict:
         """Get a summary of current configuration"""
         return {
-            "llm_provider": self.llm_provider,
             "google_cloud_project": self.google_cloud_project,
             "vertex_ai_location": self.vertex_ai_location,
             "has_google_api_key": bool(self.google_api_key),

@@ -210,11 +210,8 @@ class ClientFactory:
         """Get the preferred LLM provider based on configuration.
 
         Returns:
-            LLMProvider: The preferred LLM provider.
+            LLMProvider: The preferred LLM provider (always Google).
         """
-        provider_str = self.settings.llm_provider.lower()
-        if provider_str == "azure":
-            return LLMProvider.AZURE
         return LLMProvider.GOOGLE
 
     def clear_cache(self) -> None:

@@ -35,14 +35,25 @@ def configure_page() -> None:
 
 def initialize_session_state() -> None:
     """Initialize Streamlit session state with default values."""
-    if "selected_model" not in st.session_state:
-        st.session_state.selected_model = DEFAULT_MODEL
+    settings = get_settings()
 
     if "messages" not in st.session_state:
         st.session_state.messages = []
 
     if "show_document_management" not in st.session_state:
         st.session_state.show_document_management = False
+
+    if "selected_model" not in st.session_state:
+        # Get Google models and set default
+        google_models = settings.available_models.get("google", {})
+        if google_models:
+            # Use default if available, otherwise use first available
+            if settings.default_llm_model in google_models:
+                st.session_state.selected_model = settings.default_llm_model
+            else:
+                st.session_state.selected_model = next(iter(google_models.keys()))
+        else:
+            st.session_state.selected_model = settings.default_llm_model
 
 
 @st.cache_resource
@@ -262,27 +273,45 @@ def render_model_selector() -> None:
     st.header("⚙️ Configuration")
 
     settings = get_settings()
-    available_models = settings.available_models
+    # Get Google models since Azure is removed
+    google_models = settings.available_models.get("google", {})
+
+    if not google_models:
+        st.error("No models available")
+        return
 
     # Model selector
+    model_keys = list(google_models.keys())
+    current_model = st.session_state.get("selected_model", settings.default_llm_model)
+
+    # Ensure current model is valid
+    if current_model not in google_models:
+        current_model = model_keys[0] if model_keys else settings.default_llm_model
+
+    try:
+        current_index = model_keys.index(current_model)
+    except ValueError:
+        current_index = 0
+
     selected_model = st.selectbox(
         "Choose LLM Model:",
-        options=list(available_models.keys()),
-        format_func=lambda x: available_models[x]["name"],
-        index=list(available_models.keys()).index(st.session_state.selected_model),
+        options=model_keys,
+        format_func=lambda x: google_models[x]["name"],
+        index=current_index,
         key="model_selector",
     )
 
     # Update selected model if changed
-    if selected_model != st.session_state.selected_model:
+    if selected_model != st.session_state.get("selected_model"):
         st.session_state.selected_model = selected_model
         st.rerun()
 
     # Display model description
-    st.info(
-        f"**{available_models[st.session_state.selected_model]['name']}**\n\n"
-        f"{available_models[st.session_state.selected_model]['description']}"
-    )
+    if selected_model in google_models:
+        st.info(
+            f"**{google_models[selected_model]['name']}**\n\n"
+            f"{google_models[selected_model]['description']}"
+        )
 
 
 def render_system_info() -> None:
