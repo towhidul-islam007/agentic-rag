@@ -256,7 +256,7 @@ def get_embedder(
 
 
 def get_document_store(
-    store_type: Optional[VectorStoreType] = None, **kwargs: Any
+    store_type: Optional[VectorStoreType] = VectorStoreType.CHROMA, **kwargs: Any
 ) -> BaseDocumentStore:
     """Get a document store instance.
 
@@ -275,7 +275,7 @@ def get_document_store(
 
 
 def get_retriever(
-    store_type: Optional[VectorStoreType] = None,
+    store_type: Optional[VectorStoreType] = VectorStoreType.CHROMA,
     document_store: Optional[BaseDocumentStore] = None,
     top_k: Optional[int] = None,
     **kwargs: Any,

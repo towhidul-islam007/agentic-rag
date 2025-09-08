@@ -16,16 +16,18 @@ logger = logging.getLogger(__name__)
 class DocumentRetriever(BaseNode):
     """Handles document retrieval from vector store."""
 
-    def __init__(self, model: str = "gemini-2.5-flash") -> None:
+    def __init__(self, model: str = "gemini-2.5-flash", fast_mode: bool = True) -> None:
         """Initialize the document retriever.
 
         Args:
             model: The model name to use for LLM operations.
+            fast_mode: If True, creates a simplified pipeline for faster responses.
         """
         super().__init__(model)
         # Initialize retriever and embedder
         self.retriever = get_preferred_retriever()
         self.text_embedder = get_preferred_embedder()
+        self.fast_mode = fast_mode
 
     async def retrieve(self, state: AgenticRAGState) -> AgenticRAGState:
         """Retrieve documents based on the question in the state.
@@ -59,6 +61,10 @@ class DocumentRetriever(BaseNode):
             doc_strings = [doc.content for doc in documents]
             state["documents"] = doc_strings
             logger.info(f"Retrieved {len(documents)} documents")
+
+            if self.fast_mode:
+                # In fast mode, set filtered_documents to documents directly
+                state["filtered_documents"] = doc_strings
 
             # If no documents found, set a flag to indicate we should try web search
             if not documents:

@@ -27,10 +27,6 @@ def validate_configuration() -> None:
 def configure_page() -> None:
     """Configure Streamlit page settings and title."""
     st.set_page_config(page_title="Agentic RAG Chatbot", page_icon="🤖", layout="wide")
-    st.title("🤖 Agentic Adaptive RAG Chatbot")
-    st.markdown(
-        "Chat with an intelligent system that can search your documents and the web"
-    )
 
 
 def initialize_session_state() -> None:
@@ -42,6 +38,12 @@ def initialize_session_state() -> None:
 
     if "show_document_management" not in st.session_state:
         st.session_state.show_document_management = False
+
+    if "fast_mode" not in st.session_state:
+        st.session_state.fast_mode = True
+
+    if "use_documents" not in st.session_state:
+        st.session_state.use_documents = False
 
     if "selected_model" not in st.session_state:
         # Get Google models and set default
@@ -56,18 +58,23 @@ def initialize_session_state() -> None:
             st.session_state.selected_model = settings.default_llm_model
 
 
-@st.cache_resource
-def init_rag_system(model_name: str) -> AgenticRAG | None:
+def init_rag_system(
+    model_name: str, _fast_mode: bool = False, _use_documents: bool = True
+) -> AgenticRAG | None:
     """Initialize RAG system with caching.
 
     Args:
         model_name: Name of the LLM model to use.
+        _fast_mode: Whether to optimize for speed over thoroughness.
+        _use_documents: Whether to include document retrieval or use direct LLM.
 
     Returns:
         AgenticRAG instance or None if initialization fails.
     """
     try:
-        return AgenticRAG(model=model_name)
+        return AgenticRAG(
+            model=model_name, fast_mode=_fast_mode, use_documents=_use_documents
+        )
     except Exception as e:
         st.error(f"Error initializing RAG system: {e}")
         return None
@@ -75,21 +82,33 @@ def init_rag_system(model_name: str) -> AgenticRAG | None:
 
 def initialize_systems() -> None:
     """Initialize RAG system and document manager."""
+    fast_mode = st.session_state.get("fast_mode", True)
+    use_documents = st.session_state.get("use_documents", False)
+    current_config = f"{st.session_state.selected_model}_{fast_mode}_{use_documents}"
+
     if "rag_system" not in st.session_state:
         with st.spinner("Initializing RAG System..."):
             st.session_state.rag_system = init_rag_system(
-                st.session_state.selected_model
+                st.session_state.selected_model,
+                _fast_mode=fast_mode,
+                _use_documents=use_documents,
             )
             st.session_state.document_manager = DocumentManager()
+            st.session_state.current_config = current_config
 
-    # Track current model for reinitialization
-    if st.session_state.get("current_model") != st.session_state.selected_model:
-        st.session_state.current_model = st.session_state.selected_model
-        # Reset chat session when model changes
+    # Reinitialize if model, fast mode, or use_documents changed
+    if st.session_state.get("current_config") != current_config:
+        st.session_state.current_config = current_config
+        # Reinitialize RAG system with new configuration
+        with st.spinner("Updating configuration..."):
+            st.session_state.rag_system = init_rag_system(
+                st.session_state.selected_model,
+                _fast_mode=fast_mode,
+                _use_documents=use_documents,
+            )
+        # Reset chat session when configuration changes
         if "chat_history" in st.session_state:
             del st.session_state.chat_history
-        # Reinitialize RAG system with new model
-        st.session_state.rag_system = init_rag_system(st.session_state.selected_model)
 
 
 def display_chat_message(message: dict) -> None:
@@ -105,9 +124,11 @@ def display_chat_message(message: dict) -> None:
         if message["role"] == "assistant" and "metadata" in message:
             metadata = message["metadata"]
             with st.expander("🔍 Search Details", expanded=False):
-                st.write(f"**Route Decision:** {metadata.get('route_decision', 'N/A')}")
-                st.write(f"**Documents Used:** {metadata.get('num_documents', 0)}")
-                st.write(f"**Web Results:** {metadata.get('num_web_results', 0)}")
+                st.caption(
+                    f"**Route Decision:** {metadata.get('route_decision', 'N/A')}"
+                )
+                st.caption(f"**Documents Used:** {metadata.get('num_documents', 0)}")
+                st.caption(f"**Web Results:** {metadata.get('num_web_results', 0)}")
 
 
 def handle_user_input(prompt: str) -> None:
@@ -136,13 +157,13 @@ def handle_user_input(prompt: str) -> None:
 
                 # Show search details
                 with st.expander("🔍 Search Details", expanded=False):
-                    st.write(f"**Route Decision:** {rag_result['route_decision']}")
-                    st.write(f"**Documents Used:** {rag_result['num_documents']}")
-                    st.write(f"**Web Results:** {rag_result['num_web_results']}")
+                    st.caption(f"**Route Decision:** {rag_result['route_decision']}")
+                    st.caption(f"**Documents Used:** {rag_result['num_documents']}")
+                    st.caption(f"**Web Results:** {rag_result['num_web_results']}")
 
                     if rag_result["context"]:
-                        st.write("**Context Used:**")
-                        st.text_area("Context", rag_result["context"], height=200)
+                        st.caption("**Context Used:**")
+                        st.text_area("Context", rag_result["context"], height=100)
 
                 # Add to chat history with metadata
                 st.session_state.messages.append(
@@ -156,6 +177,7 @@ def handle_user_input(prompt: str) -> None:
                         },
                     }
                 )
+                st.rerun()
 
             except Exception as e:
                 error_msg = f"Error: {e!s}"
@@ -168,18 +190,69 @@ def handle_user_input(prompt: str) -> None:
 
 
 def render_chat_interface() -> None:
-    """Render the main chat interface."""
+    """Render the main chat interface with controls."""
     # Show either chat interface or document management
     if st.session_state.show_document_management:
         render_document_management_content()
-    else:
+        return
+
+    # Create a padded container using columns for better visual appearance
+    col1, col2, col3 = st.columns([1, 6, 1])  # Add padding with side columns
+
+    with col2:
+        # Check if there are any messages to determine layout
+        has_messages = len(st.session_state.messages) > 0
+
+        # If no messages, add spacing to center the interface
+        if not has_messages:
+            st.markdown("<br>" * 3, unsafe_allow_html=True)
+
         # Display chat history
         for message in st.session_state.messages:
             display_chat_message(message)
 
-        # Chat input
-        if prompt := st.chat_input("What would you like to know?"):
+        # Handle chat input at the very end
+        prompt = st.chat_input("What would you like to know?")
+        if prompt:
             handle_user_input(prompt)
+
+
+def render_chat_controls() -> None:
+    """Render the chat control toggles."""
+    # Create two columns for the controls
+    ctrl_col1, ctrl_col2 = st.columns(2)
+
+    with ctrl_col1:
+        # Fast response toggle
+        fast_mode = st.toggle(
+            "⚡ Fast Response",
+            value=st.session_state.get("fast_mode", True),
+            help="Skip analysis steps for faster responses",
+            key="fast_mode_toggle",
+        )
+        if st.session_state.get("fast_mode") != fast_mode:
+            st.session_state.fast_mode = fast_mode
+            # Force reinitialization by clearing the RAG system
+            st.session_state.rag_system = None
+            st.session_state.pop("current_config", None)
+            initialize_systems()
+            st.rerun()
+
+    with ctrl_col2:
+        # Document search toggle
+        use_documents = st.toggle(
+            "📚 Search Documents",
+            value=st.session_state.get("use_documents", False),
+            help="Search uploaded documents vs direct LLM response",
+            key="use_documents_toggle",
+        )
+        if st.session_state.get("use_documents") != use_documents:
+            st.session_state.use_documents = use_documents
+            # Force reinitialization by clearing the RAG system
+            st.session_state.rag_system = None
+            st.session_state.pop("current_config", None)
+            initialize_systems()
+            st.rerun()
 
 
 def handle_document_upload(uploaded_files: list) -> None:
@@ -312,6 +385,40 @@ def render_model_selector() -> None:
             f"**{google_models[selected_model]['name']}**\n\n"
             f"{google_models[selected_model]['description']}"
         )
+
+    # Chat controls in sidebar
+    st.divider()
+    st.subheader("🎛️ Chat Controls")
+
+    # Fast response toggle
+    fast_mode = st.toggle(
+        "⚡ Fast Response",
+        value=st.session_state.get("fast_mode", True),
+        help="Skip analysis steps for faster responses",
+        key="sidebar_fast_mode_toggle",
+    )
+    if st.session_state.get("fast_mode") != fast_mode:
+        st.session_state.fast_mode = fast_mode
+        # Force reinitialization by clearing the RAG system
+        st.session_state.rag_system = None
+        st.session_state.pop("current_config", None)
+        initialize_systems()
+        st.rerun()
+
+    # Document search toggle
+    use_documents = st.toggle(
+        "📚 Search Documents",
+        value=st.session_state.get("use_documents", False),
+        help="Search uploaded documents vs direct LLM response",
+        key="sidebar_use_documents_toggle",
+    )
+    if st.session_state.get("use_documents") != use_documents:
+        st.session_state.use_documents = use_documents
+        # Force reinitialization by clearing the RAG system
+        st.session_state.rag_system = None
+        st.session_state.pop("current_config", None)
+        initialize_systems()
+        st.rerun()
 
 
 def render_system_info() -> None:

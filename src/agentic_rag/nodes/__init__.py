@@ -11,10 +11,10 @@ from agentic_rag.state import AgenticRAGState
 class RAGNodes:
     """Collection of nodes for the RAG workflow"""
 
-    def __init__(self, model: str = "gemini-2.5-flash") -> None:
+    def __init__(self, model: str = "gemini-2.5-flash", fast_mode: bool = True) -> None:
         # Initialize all node components
         self.query_analyzer = QueryAnalyzer(model)
-        self.document_retriever = DocumentRetriever(model)
+        self.document_retriever = DocumentRetriever(model, fast_mode=fast_mode)
         self.document_grader = DocumentGrader(model)
         self.response_generator = ResponseGenerator(model)
         self.response_grader = ResponseGrader(model)

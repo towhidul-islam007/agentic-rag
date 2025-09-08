@@ -55,7 +55,6 @@ class ResponseGenerator(BaseNode):
             You are an assistant for question-answering tasks.
             Use the following pieces of retrieved context to answer the question.
             If you don't know the answer, just say that you don't know.
-            Use three sentences maximum and keep the answer concise.
 
             Question: {question}
             Context: {context}
@@ -65,7 +64,6 @@ class ResponseGenerator(BaseNode):
             generation_prompt = f"""
             You are an assistant for question-answering tasks.
             Answer the following question using your knowledge.
-            Use three sentences maximum and keep the answer concise.
 
             Question: {question}
             Answer:
